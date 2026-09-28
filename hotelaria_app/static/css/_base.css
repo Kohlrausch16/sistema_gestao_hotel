@@ -1,0 +1,90 @@
+body{
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    background-color: #F8FAFC;
+    margin: 0;
+    padding: 0;
+}
+
+main{
+    display: flex;
+    flex: 1;
+}
+
+.container{
+    box-sizing: border-box;
+    padding: 1rem 1rem;
+    flex: 1;
+}
+
+/*  --- ESTILIZAÇÃO HEADER --- */
+
+header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    box-sizing: border-box;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.logo-header{
+    width: clamp(10px, 6rem, 100px);
+}
+
+/*  --- ESTILIZAÇÃO MENU LATERAL --- */
+
+aside{
+    width: clamp(10px, 90%, 200px);
+    min-height: 100%;
+    background-color: #FFFFFF;
+    border-right: 1px solid #E2E8F0;
+}
+
+nav{
+    flex: 1;
+    padding: 0 5px;
+    font-family: "Inter", sans-serif;
+}
+
+ul{
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    gap: 0.5rem;
+}
+
+li{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0.7rem 5px 0.7rem calc(0.5rem + 5px);
+    position: relative;
+    overflow: hidden;
+    color: #334155;
+    font-size: 0.8rem;
+    transition: background-color 0.5s, padding-left 0.5s, color 0.5s;
+}
+
+li::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: red;
+  width: 5px;
+  border-radius: 0px 8px 8px 0px;
+  pointer-events: none;
+}
+
+li:hover{
+    cursor: pointer;
+    background-color: #E2E8F0;
+    color: #11141a;
+    border-radius: 0px 5px 5px 0px;
+    padding-left: 1rem;
+}
