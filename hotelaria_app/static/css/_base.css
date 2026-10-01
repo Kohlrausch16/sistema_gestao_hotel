@@ -12,10 +12,17 @@ main{
     flex: 1;
 }
 
+button{
+    align-self: flex-start;
+}
+
 .container{
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
     padding: 2rem 5rem;
     flex: 1;
+    gap: 0.5rem;
 }
 
 /*  --- ESTILIZAÇÃO HEADER --- */
@@ -87,6 +94,16 @@ li:hover{
 }
 
 #icone-clientes{ color: #3B82F6; }
+
+.botao-retornar{
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+/*  --- ESTILIZAÇÃO GERAL --- */
+
 
 @media(max-width: 800px){
     
