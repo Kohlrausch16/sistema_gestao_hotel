@@ -1,0 +1,21 @@
+.item-navegacao{
+    font-family: "Inter", sans-serif;
+    color: #334155;
+    font-size: 0.8rem;
+}
+
+.placeholder-input{
+    color: #768396;
+    font-family: "Inter", sans-serif;
+}
+
+.placeholder-input::placeholder{
+    color: #94A3B8;
+    font-family: "Inter", sans-serif;
+}
+
+.titulo-pagina{
+    font-size: 1.2rem;
+    color: #0F172A;
+    font-family: "Inter", sans-serif;
+}

@@ -1,0 +1,33 @@
+@keyframes easeOut{
+    0%{ opacity: 1; }
+    100%{ opacity: 0; }
+}
+
+.mensagem-container{
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 1rem;
+    max-width: 250px;
+    background-color: rgba(255, 0, 0, 0.051);
+    font-family: "Inter", sans-serif;
+    padding: 1rem 1.5rem;
+    border-radius: 5px;
+    animation: easeOut 1s 5s forwards;
+}
+
+.mensagem-success{
+    background-color: #E6F4EA;
+    border: 1px solid #CEEAD6;
+    color: #137333;
+}
+
+.mensagem-error{
+    background-color: #FCE8E6;
+    border: 1px solid #FAD2CF;
+    color: #C5221F;
+    margin-bottom: 300px;
+}
