@@ -15,8 +15,9 @@ input[type="number"] {
 }
 
 form{
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto;
     background-color: #FFFFFF;
     border: 1px solid #CBD5E1;
     border-radius: 5px;
@@ -43,4 +44,42 @@ label{
     margin-bottom: 5px;
     text-decoration: none;
     font-family: "Inter", sans-serif;
+}
+
+.container-botoes{
+    display: flex;
+    gap: 0.5rem;
+}
+
+.botao-formulario{
+    font-family: "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 1rem;
+    width: min-content;
+    border-radius: 7px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: background-color 0.5s;
+}
+
+.botao-confirmar{
+    color: #FFFFFF;
+    background-color: #0F172A;
+    border: 1px solid #0F172A;
+}
+
+.botao-confirmar:hover{
+    background-color: #0f172ac4;
+}
+
+.botao-cancelar{
+    color: #0F172A;
+    background-color: transparent;
+    border: 1px solid #CBD5E1;
+}
+
+.botao-cancelar:hover{
+    background-color: #cdcfd1;
 }

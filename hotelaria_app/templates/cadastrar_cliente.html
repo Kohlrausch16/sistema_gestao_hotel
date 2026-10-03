@@ -16,13 +16,16 @@
 
 {% block main %}
     
-    <form method="POST">
+    <form  class="formulario-cliente" method="POST">
 
         {% csrf_token %}
 
         {{ formulario.as_p }}
 
-        <button type="submit">Cadastrar</button>
+        <div class="container-botoes">
+            <button class="botao-formulario botao-cancelar" type="button">CANCELAR</button>
+            <button class="botao-formulario botao-confirmar" type="submit">CADASTRAR</button>
+        </div>
     </form>
 
 {% endblock %}k

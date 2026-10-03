@@ -39,10 +39,9 @@
         </div>        
     </main>
 
-
-    <script>
-        {% block arquivos_js %} {% endblock %}
-    </script>
+    <script src="{% static 'scripts/botaoRetornar.js' %}"></script>
+    <script src="{% static 'scripts/botaoLimparFormulario.js' %}"></script>
+    {% block arquivos_js %} {% endblock %}
 
 </body>
 </html>
