@@ -13,6 +13,7 @@
 
     <link rel="stylesheet" href={% static "css/_base.css" %} />
     <link rel="stylesheet" href={% static "css/tipografias.css" %} />
+    <link rel="stylesheet" href={% static "css/_mensagem.css" %} />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous">
     
     {% block arquivos_css %} {% endblock %}
@@ -28,9 +29,9 @@
 
     <main>
         {% include "partials/_menu_lateral.html" %}
+        {% include 'partials/_mensagem.html' %}
         
         <div class="container">
-
             {% block titulo_pagina %}
             {% endblock %}
 

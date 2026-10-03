@@ -1,0 +1,21 @@
+{% if messages %}
+
+    {% for mensagem in messages %}
+
+        {% if mensagem.tags == 'success' %}
+            <div class="mensagem-success mensagem-container">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>{{ mensagem }}<span>
+            </div>
+        {% endif %}
+
+        {% if mensagem.tags == 'error' %}
+            <div class="mensagem-error mensagem-container">
+                <i class="fa-solid fa-circle-xmark"></i>
+                <span>{{ mensagem }}<span>
+            </div>
+        {% endif %}
+
+    {% endfor %}
+
+{% endif %}

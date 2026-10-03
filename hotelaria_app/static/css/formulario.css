@@ -83,3 +83,11 @@ label{
 .botao-cancelar:hover{
     background-color: #cdcfd1;
 }
+
+@media(max-width: 800px){
+    
+    form{
+        display: flex;
+        flex-direction: column;
+    }
+}
