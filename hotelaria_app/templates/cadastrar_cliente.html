@@ -1,0 +1,31 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href={% static "css/formulario.css" %} />
+{% endblock %}
+
+
+{% block titulo_pagina %}
+
+<button class="botao-retornar item-navegacao"> < Voltar</button>
+<h1 class="titulo-pagina">CADASTRAR CLIENTE</h1>
+
+{% endblock %}
+
+
+{% block main %}
+    
+    <form  class="formulario-cliente" method="POST">
+
+        {% csrf_token %}
+
+        {{ formulario.as_p }}
+
+        <div class="container-botoes">
+            <button class="botao-formulario botao-cancelar" type="button">CANCELAR</button>
+            <button class="botao-formulario botao-confirmar" type="submit">CADASTRAR</button>
+        </div>
+    </form>
+
+{% endblock %}k

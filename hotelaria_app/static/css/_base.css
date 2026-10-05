@@ -12,10 +12,17 @@ main{
     flex: 1;
 }
 
+button{
+    align-self: flex-start;
+}
+
 .container{
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
-    padding: 1rem 1rem;
+    padding: 2rem 5rem;
     flex: 1;
+    gap: 0.5rem;
 }
 
 /*  --- ESTILIZAÇÃO HEADER --- */
@@ -47,7 +54,6 @@ aside{
 nav{
     flex: 1;
     padding: 0 5px;
-    font-family: "Inter", sans-serif;
 }
 
 ul{
@@ -66,8 +72,6 @@ li{
     padding: 0.7rem 5px 0.7rem calc(0.5rem + 5px);
     position: relative;
     overflow: hidden;
-    color: #334155;
-    font-size: 0.8rem;
     transition: background-color 0.5s, padding-left 0.5s, color 0.5s;
 }
 
@@ -75,7 +79,7 @@ li::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-color: red;
+  background-color: #3B82F6;
   width: 5px;
   border-radius: 0px 8px 8px 0px;
   pointer-events: none;
@@ -87,4 +91,24 @@ li:hover{
     color: #11141a;
     border-radius: 0px 5px 5px 0px;
     padding-left: 1rem;
+}
+
+#icone-clientes{ color: #3B82F6; }
+
+.botao-retornar{
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+/*  --- ESTILIZAÇÃO GERAL --- */
+
+
+@media(max-width: 800px){
+    
+    .container{
+        padding: 2rem 1rem;
+    }
+
 }
