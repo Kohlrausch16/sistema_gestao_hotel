@@ -19,7 +19,7 @@
     <div class="acoes-pagina-container">
         <input class="campo-formulario placeholder-input input-cpf" placeholder="Informe o nome do cliente para buscar" />
         <button class="botao-formulario botao-cancelar">Buscar</button>
-        <button class="botao-formulario botao-confirmar"><a href="{% url "cadastrar_cliente" %}">Adicionar cliente</a></button>
+        <a href="{% url "cadastrar_cliente" %}" class="botao-formulario botao-confirmar">Adicionar cliente</a>
     </div>
 
     <table border="">
@@ -37,9 +37,9 @@
             {% for cliente in clientes %}
 
                 <tr class="item-tabela">
-                    <td class="campo-nome-tabela coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
-                    <td>{{ cliente.cpf }}</td>
-                    <td>{{ True }}</td>
+                    <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
+                    <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
+                    <td class="tabela-fonte-3">{{ True }}</td>
                     <td>
                         ddd
                     </td>
@@ -48,4 +48,8 @@
         </tbody>
     </table>
 
+{% endblock %}
+
+{% block arquivos_js %}
+    <script src="{% static 'scripts/aplicarMascaraCpf.js' %}"></script>
 {% endblock %}
