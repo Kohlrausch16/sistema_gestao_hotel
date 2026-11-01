@@ -47,7 +47,7 @@ def cadastrar_quarto(request):
             mensagem_confirmacao = "Quarto cadastrado com sucesso!"
             messages.success(request, mensagem_confirmacao)
 
-            return redirect('index')
+            return redirect('listar_quartos')
 
 
     return render(request, "cadastrar_quarto.html", {'formulario': form})
@@ -84,6 +84,11 @@ def editar_quarto(request, quarto_id):
 @require_POST
 def excluir_quarto(request, quarto_id):
     quarto = Quarto.objects.get(id=quarto_id)
+    if quarto.status == 'O':
+        mensagem_erro = "Não é possível excluir um quarto ocupado"
+        messages.error(request, mensagem_erro)
+        return redirect('listar_quartos')
+    
     quarto.ativo = False
     quarto.save()
 
