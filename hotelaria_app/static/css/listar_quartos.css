@@ -138,6 +138,21 @@
     color: #92400E;
 }
 
+.status-reserva-a{
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.status-reserva-c{
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.status-reserva-f{
+    background: #F1F5F9;
+    color: #475569;
+}
+
 .acoes-quarto{
     display: flex;
     align-items: center;

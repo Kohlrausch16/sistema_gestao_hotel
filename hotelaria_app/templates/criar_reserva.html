@@ -1,0 +1,61 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Criar reserva{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}?v=4">
+{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
+    <h1 class="titulo-pagina">CRIAR RESERVA</h1>
+{% endblock %}
+
+{% block main %}
+    <form class="formulario-reserva" method="post" action="{% url 'criar_reserva' %}">
+        {% csrf_token %}
+
+        {% if formulario.non_field_errors %}
+            <div role="alert">{{ formulario.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="campo-cliente">
+            <label for="{{ formulario.cliente.id_for_label }}">{{ formulario.cliente.label }}</label>
+            <input class="campo-formulario pesquisa-cliente" type="search" id="pesquisa-cliente" placeholder="Pesquisar cliente por CPF" aria-label="Pesquisar cliente por CPF" inputmode="numeric">
+            <div class="campo-cliente-acoes">
+                {{ formulario.cliente }}
+                <a class="botao-formulario botao-novo-cliente" href="{% url 'cadastrar_cliente' %}">Novo Cliente</a>
+            </div>
+            {{ formulario.cliente.errors }}
+        </div>
+        <div>
+            <label for="{{ formulario.data_entrada.id_for_label }}">{{ formulario.data_entrada.label }}</label>
+            {{ formulario.data_entrada }}
+            {{ formulario.data_entrada.errors }}
+        </div>
+        <div>
+            <label for="{{ formulario.data_saida.id_for_label }}">{{ formulario.data_saida.label }}</label>
+            {{ formulario.data_saida }}
+            {{ formulario.data_saida.errors }}
+        </div>
+        <div>
+            <label for="{{ formulario.quarto.id_for_label }}">{{ formulario.quarto.label }}</label>
+            <div data-disponibilidade-url="{% url 'quartos_disponiveis' %}">
+                {{ formulario.quarto }}
+                <p id="mensagem-disponibilidade" role="status" aria-live="polite"></p>
+            </div>
+            {{ formulario.quarto.errors }}
+        </div>
+
+        <div class="container-botoes">
+            <a class="botao-formulario botao-cancelar" href="{% url 'listar_reservas' %}">CANCELAR</a>
+            <button class="botao-formulario botao-confirmar" type="submit">CRIAR RESERVA</button>
+        </div>
+    </form>
+{% endblock %}
+
+{% block arquivos_js %}
+    <script src="{% static 'scripts/filtrarClientes.js' %}"></script>
+    <script src="{% static 'scripts/quartosDisponiveis.js' %}"></script>
+{% endblock %}

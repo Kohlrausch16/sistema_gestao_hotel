@@ -15,7 +15,7 @@
 
 
 {% block main %}
-    
+
     <div class="acoes-pagina-container">
         <input class="campo-formulario placeholder-input input-cpf" placeholder="Informe o nome do cliente para buscar" />
         <button class="botao-formulario botao-cancelar">Buscar</button>
@@ -34,44 +34,6 @@
 
         <tbody>
 
-            {% for cliente in clientes %}
-
-                <tr class="item-tabela">
-                    <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
-                    <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
-                    <!-- TODO Implementar fetch das hospedagens - Depende do Model de Checkins -->
-                    <td class="tabela-fonte-3">{{ True }}</td>
-                    <td class="coluna-acao">
-                        ddd
-                    </td>
-                </tr>
-            {% endfor %}
-
-            {% for cliente in clientes %}
-
-                <tr class="item-tabela">
-                    <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
-                    <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
-                    <!-- TODO Implementar fetch das hospedagens - Depende do Model de Checkins -->
-                    <td class="tabela-fonte-3">{{ True }}</td>
-                    <td class="coluna-acao">
-                        ddd
-                    </td>
-                </tr>
-            {% endfor %}
-
-            {% for cliente in clientes %}
-
-                <tr class="item-tabela">
-                    <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
-                    <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
-                    <!-- TODO Implementar fetch das hospedagens - Depende do Model de Checkins -->
-                    <td class="tabela-fonte-3">{{ True }}</td>
-                    <td class="coluna-acao">
-                        ddd
-                    </td>
-                </tr>
-            {% endfor %}
 
             {% for cliente in clientes %}
 

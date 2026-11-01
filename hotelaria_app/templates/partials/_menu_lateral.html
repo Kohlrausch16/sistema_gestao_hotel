@@ -2,24 +2,27 @@
     <nav>
         <ul class="menu-lateral-container">
 
-            <!--Opções meramente ilustrativas-->
-
             <li class="item-navegacao">
-                <i class="fa-solid fa-users" id="icone-clientes"></i>
-                Gerenciar clientes
-            </li>
-
-            <li class="item-navegacao">
-                <i class="fa-solid fa-bed" id="icone-quartos"></i>
-                <a href="{% url 'listar_quartos' %}">Gerenciar quartos</a>
-            </li>
-
-            <a href={% url "listagem_clientes" %}>
-                <li class="item-navegacao">
-                    <i class="fa-solid fa-users" id="icone-clientes"></i>
+                <a href="{% url 'listagem_clientes' %}">
+                    <i class="fa-solid fa-users" id="icone-clientes" aria-hidden="true"></i>
                     Gerenciar clientes
-                </li>
-            </a>
+                </a>
+            </li>
+
+            <li class="item-navegacao">
+                <a href="{% url 'listar_quartos' %}">
+                    <i class="fa-solid fa-bed" id="icone-quartos" aria-hidden="true"></i>
+                    Gerenciar quartos
+                </a>
+            </li>
+
+            <li class="item-navegacao">
+                <a href="{% url 'listar_reservas' %}">
+                    <i class="fa-solid fa-calendar-days" id="icone-reservas" aria-hidden="true"></i>
+                    Gerenciar reservas
+                </a>
+            </li>
+
         </ul>
     </nav>
 </aside>

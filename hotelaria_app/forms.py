@@ -1,5 +1,8 @@
 from django import forms
-from .models import Cliente, Quarto
+from datetime import date
+
+from .disponibilidade import quartos_disponiveis
+from .models import Cliente, Quarto, Reserva
 
 class ClienteForm(forms.ModelForm):
 
@@ -159,4 +162,81 @@ class EditarQuartoForm(QuartoForm):
             "status": forms.Select(attrs={
                 "class": "campo-formulario placeholder-input input-status"
             }),
+        }
+
+class ReservaForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["cliente"].label_from_instance = (
+            lambda cliente: f"{cliente} — CPF: {cliente.cpf}"
+        )
+        self.fields["quarto"].queryset = Quarto.objects.none()
+        self.fields["quarto"].error_messages["invalid_choice"] = (
+            "Este quarto não está disponível nas datas escolhidas."
+        )
+
+        if self.is_bound:
+            try:
+                entrada = date.fromisoformat(self.data.get("data_entrada", ""))
+                saida = date.fromisoformat(self.data.get("data_saida", ""))
+            except (TypeError, ValueError):
+                return
+        elif self.instance.pk:
+            entrada = self.instance.data_entrada
+            saida = self.instance.data_saida
+        else:
+            return
+
+        if saida > entrada:
+            self.fields["quarto"].queryset = quartos_disponiveis(
+                entrada, saida, excluir_reserva_id=self.instance.pk
+            )
+
+    def clean(self):
+        dados = super().clean()
+        entrada = dados.get("data_entrada")
+        saida = dados.get("data_saida")
+        if entrada and saida and saida <= entrada:
+            self.add_error("data_saida", "A saída deve ser posterior à entrada.")
+        return dados
+
+    class Meta:
+        model = Reserva
+
+        fields = [
+            "cliente",
+            "quarto",
+            "data_entrada",
+            "data_saida"
+        ]
+
+        labels = {
+            "cliente": "CLIENTE",
+            "quarto": "QUARTO",
+            "data_entrada": "DATA DE ENTRADA",
+            "data_saida": "DATA DE SAÍDA"
+        }
+
+        widgets = {
+            "cliente": forms.Select(attrs={
+                "class": "campo-formulario placeholder-input input-cliente"
+            }),
+
+            "quarto": forms.Select(attrs={
+                "class": "campo-formulario placeholder-input input-quarto"
+            }),
+
+            "data_entrada": forms.DateInput(attrs={
+                "type": "date",
+                "class": "campo-formulario placeholder-input input-data-entrada",
+                "placeholder": "01/01/2024"
+            },
+            format="%Y-%m-%d"),
+
+            "data_saida": forms.DateInput(attrs={
+                "type": "date",
+                "class": "campo-formulario placeholder-input input-data-saida",
+                "placeholder": "05/01/2024"
+            },
+            format="%Y-%m-%d"),
         }
