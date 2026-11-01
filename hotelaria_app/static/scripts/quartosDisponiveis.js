@@ -3,6 +3,7 @@ const saida = document.getElementById("id_data_saida");
 const quarto = document.getElementById("id_quarto");
 const mensagem = document.getElementById("mensagem-disponibilidade");
 const url = document.querySelector("[data-disponibilidade-url]")?.dataset.disponibilidadeUrl;
+const reservaId = document.querySelector("[data-reserva-id]")?.dataset.reservaId;
 
 if (entrada && saida && quarto && mensagem && url) {
     let consultaAtual;
@@ -33,6 +34,7 @@ if (entrada && saida && quarto && mensagem && url) {
                 entrada: entrada.value,
                 saida: saida.value,
             });
+            if (reservaId) parametros.set("reserva_id", reservaId);
             const resposta = await fetch(`${url}?${parametros}`, { signal: controller.signal });
             const dados = await resposta.json();
             if (!resposta.ok) throw new Error(dados.erro || "Não foi possível consultar os quartos.");

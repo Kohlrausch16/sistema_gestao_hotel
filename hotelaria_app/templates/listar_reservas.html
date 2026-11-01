@@ -4,7 +4,7 @@
 {% block title %}Reservas{% endblock %}
 
 {% block arquivos_css %}
-    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}">
+    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}?v=2">
 {% endblock %}
 
 {% block titulo_pagina %}
@@ -36,6 +36,8 @@
                             <th scope="col">Quarto</th>
                             <th scope="col">Entrada</th>
                             <th scope="col">Saída</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,6 +47,26 @@
                                 <td class="numero-quarto">{{ reserva.quarto.numero }}</td>
                                 <td>{{ reserva.data_entrada|date:"d/m/Y" }}</td>
                                 <td>{{ reserva.data_saida|date:"d/m/Y" }}</td>
+                                <td>
+                                    <span class="status-quarto status-reserva-{{ reserva.status|lower }}">
+                                        {{ reserva.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if reserva.status == 'A' and reserva.data_entrada > hoje %}
+                                        <div class="acoes-quarto">
+                                            <a href="{% url 'editar_reserva' reserva.id %}" class="botao-editar" aria-label="Editar reserva de {{ reserva.cliente }} no quarto {{ reserva.quarto.numero }}" title="Editar reserva">
+                                                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                            </a>
+                                            <form action="{% url 'cancelar_reserva' reserva.id %}" method="post" class="form-excluir-quarto">
+                                                {% csrf_token %}
+                                                <button type="submit" class="botao-excluir" aria-label="Cancelar reserva de {{ reserva.cliente }} no quarto {{ reserva.quarto.numero }}" title="Cancelar reserva">
+                                                    <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>

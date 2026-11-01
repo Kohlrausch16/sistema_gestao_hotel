@@ -1,4 +1,5 @@
 from datetime import date
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.urls import reverse
@@ -82,3 +83,167 @@ class DisponibilidadeQuartosTests(TestCase):
 
         self.assertRedirects(resposta, reverse("listar_reservas"))
         self.assertEqual(Reserva.objects.count(), 2)
+
+    def test_cancelamento_libera_quarto_e_mantem_historico(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        with patch("hotelaria_app.views.timezone.localdate", return_value=date(2026, 11, 9)):
+            resposta = self.client.post(reverse("cancelar_reserva", args=[reserva.id]))
+
+        self.assertRedirects(resposta, reverse("listar_reservas"))
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.status, "C")
+        self.assertTrue(reserva.ativo)
+
+        disponibilidade = self.client.get(reverse("quartos_disponiveis"), {
+            "entrada": "2026-11-11", "saida": "2026-11-13"
+        })
+        self.assertIn(
+            self.ocupado.id,
+            [quarto["id"] for quarto in disponibilidade.json()["quartos"]],
+        )
+
+        listagem = self.client.get(reverse("listar_reservas"))
+        self.assertContains(listagem, "Cancelada")
+        self.assertContains(listagem, self.ocupado.numero)
+
+    def test_cancelamento_exige_post(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        resposta = self.client.get(reverse("cancelar_reserva", args=[reserva.id]))
+
+        self.assertEqual(resposta.status_code, 405)
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.status, "A")
+
+    def test_cancelamento_na_data_do_checkin_e_recusado(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        url = reverse("cancelar_reserva", args=[reserva.id])
+
+        with patch("hotelaria_app.views.timezone.localdate", return_value=date(2026, 11, 10)):
+            listagem = self.client.get(reverse("listar_reservas"))
+            resposta = self.client.post(url, follow=True)
+
+        self.assertNotContains(listagem, url)
+        self.assertContains(resposta, "A reserva só pode ser cancelada antes do check-in.")
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.status, "A")
+
+    def test_cancelamento_apos_checkin_e_recusado(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+
+        with patch("hotelaria_app.views.timezone.localdate", return_value=date(2026, 11, 11)):
+            resposta = self.client.post(reverse("cancelar_reserva", args=[reserva.id]))
+
+        self.assertRedirects(resposta, reverse("listar_reservas"))
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.status, "A")
+
+    def test_edicao_antes_do_checkin_aceita_propria_reserva(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        url = reverse("editar_reserva", args=[reserva.id])
+
+        with patch("hotelaria_app.views.timezone.localdate", return_value=date(2026, 11, 9)):
+            pagina = self.client.get(url)
+            resposta = self.client.post(url, {
+                "cliente": self.cliente.id,
+                "quarto": self.ocupado.id,
+                "data_entrada": "2026-11-10",
+                "data_saida": "2026-11-13",
+            })
+
+        self.assertContains(pagina, 'value="2026-11-10"')
+        self.assertContains(pagina, f'value="{self.ocupado.id}" selected')
+        self.assertRedirects(resposta, reverse("listar_reservas"))
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.data_saida, date(2026, 11, 13))
+
+    def test_consulta_da_edicao_inclui_o_quarto_da_propria_reserva(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        resposta = self.client.get(reverse("quartos_disponiveis"), {
+            "entrada": "2026-11-10",
+            "saida": "2026-11-12",
+            "reserva_id": reserva.id,
+        })
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn(
+            self.ocupado.id,
+            [quarto["id"] for quarto in resposta.json()["quartos"]],
+        )
+
+    def test_edicao_no_checkin_e_recusada(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        url = reverse("editar_reserva", args=[reserva.id])
+
+        with patch("hotelaria_app.views.timezone.localdate", return_value=date(2026, 11, 10)):
+            listagem = self.client.get(reverse("listar_reservas"))
+            pagina = self.client.get(url)
+            resposta = self.client.post(url, {
+                "cliente": self.cliente.id,
+                "quarto": self.livre.id,
+                "data_entrada": "2026-11-11",
+                "data_saida": "2026-11-13",
+            })
+
+        self.assertNotContains(listagem, url)
+        self.assertRedirects(pagina, reverse("listar_reservas"))
+        self.assertRedirects(resposta, reverse("listar_reservas"))
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.quarto_id, self.ocupado.id)
+
+    def test_edicao_nao_aceita_nova_entrada_no_passado(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        url = reverse("editar_reserva", args=[reserva.id])
+
+        with patch("hotelaria_app.views.timezone.localdate", return_value=date(2026, 11, 9)):
+            resposta = self.client.post(url, {
+                "cliente": self.cliente.id,
+                "quarto": self.ocupado.id,
+                "data_entrada": "2026-11-09",
+                "data_saida": "2026-11-12",
+            })
+
+        self.assertContains(resposta, "A entrada deve ser uma data futura.")
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.data_entrada, date(2026, 11, 10))
+
+    def test_edicao_recusa_quarto_de_outra_reserva(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        Reserva.objects.create(
+            cliente=self.cliente,
+            quarto=self.livre,
+            data_entrada=date(2026, 11, 11),
+            data_saida=date(2026, 11, 14),
+        )
+
+        with patch("hotelaria_app.views.timezone.localdate", return_value=date(2026, 11, 9)):
+            resposta = self.client.post(reverse("editar_reserva", args=[reserva.id]), {
+                "cliente": self.cliente.id,
+                "quarto": self.livre.id,
+                "data_entrada": "2026-11-10",
+                "data_saida": "2026-11-13",
+            })
+
+        self.assertContains(resposta, "Este quarto não está disponível")
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.quarto_id, self.ocupado.id)
+
+    def test_reserva_finalizada_nao_bloqueia_quarto(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        reserva.status = "F"
+        reserva.save(update_fields=["status"])
+
+        resposta = self.client.get(reverse("quartos_disponiveis"), {
+            "entrada": "2026-11-11", "saida": "2026-11-13"
+        })
+        self.assertIn(
+            self.ocupado.id,
+            [quarto["id"] for quarto in resposta.json()["quartos"]],
+        )
+
+    def test_reserva_excluida_logicamente_nao_aparece_na_listagem(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        reserva.ativo = False
+        reserva.save(update_fields=["ativo"])
+
+        resposta = self.client.get(reverse("listar_reservas"))
+        self.assertNotContains(resposta, self.ocupado.numero)

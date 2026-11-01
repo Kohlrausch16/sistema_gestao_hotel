@@ -1,12 +1,16 @@
 from .models import Quarto, Reserva
 
 
-def quartos_disponiveis(entrada, saida):
+def quartos_disponiveis(entrada, saida, excluir_reserva_id=None):
     reservas_conflitantes = Reserva.objects.filter(
         ativo=True,
+        status="A",
         data_entrada__lt=saida,
         data_saida__gt=entrada,
     ).values("quarto_id")
+
+    if excluir_reserva_id is not None:
+        reservas_conflitantes = reservas_conflitantes.exclude(id=excluir_reserva_id)
 
     return (
         Quarto.objects.filter(ativo=True)

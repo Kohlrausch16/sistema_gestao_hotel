@@ -181,9 +181,16 @@ class ReservaForm(forms.ModelForm):
                 saida = date.fromisoformat(self.data.get("data_saida", ""))
             except (TypeError, ValueError):
                 return
+        elif self.instance.pk:
+            entrada = self.instance.data_entrada
+            saida = self.instance.data_saida
+        else:
+            return
 
-            if saida > entrada:
-                self.fields["quarto"].queryset = quartos_disponiveis(entrada, saida)
+        if saida > entrada:
+            self.fields["quarto"].queryset = quartos_disponiveis(
+                entrada, saida, excluir_reserva_id=self.instance.pk
+            )
 
     def clean(self):
         dados = super().clean()
@@ -224,16 +231,12 @@ class ReservaForm(forms.ModelForm):
                 "class": "campo-formulario placeholder-input input-data-entrada",
                 "placeholder": "01/01/2024"
             },
-            format = {
-                "%Y-%m-%d"
-            }),
+            format="%Y-%m-%d"),
 
             "data_saida": forms.DateInput(attrs={
                 "type": "date",
                 "class": "campo-formulario placeholder-input input-data-saida",
                 "placeholder": "05/01/2024"
             },
-            format = {
-                "%Y-%m-%d"
-            }),
+            format="%Y-%m-%d"),
         }
