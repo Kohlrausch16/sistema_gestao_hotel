@@ -28,7 +28,7 @@
                 <th class="titulo-coluna-tabela coluna-nome">NOME</th>
                 <th class="titulo-coluna-tabela">CPF</th>
                 <th class="titulo-coluna-tabela">HOSPEDADO</th>
-                <th class="titulo-coluna-tabela">AÇÕES</th>
+                <th class="titulo-coluna-tabela">MOSTRAR MAIS</th>
             </tr>
         </thead>
 
@@ -39,8 +39,48 @@
                 <tr class="item-tabela">
                     <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
                     <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
+                    <!-- TODO Implementar fetch das hospedagens - Depende do Model de Checkins -->
                     <td class="tabela-fonte-3">{{ True }}</td>
-                    <td>
+                    <td class="coluna-acao">
+                        ddd
+                    </td>
+                </tr>
+            {% endfor %}
+
+            {% for cliente in clientes %}
+
+                <tr class="item-tabela">
+                    <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
+                    <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
+                    <!-- TODO Implementar fetch das hospedagens - Depende do Model de Checkins -->
+                    <td class="tabela-fonte-3">{{ True }}</td>
+                    <td class="coluna-acao">
+                        ddd
+                    </td>
+                </tr>
+            {% endfor %}
+
+            {% for cliente in clientes %}
+
+                <tr class="item-tabela">
+                    <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
+                    <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
+                    <!-- TODO Implementar fetch das hospedagens - Depende do Model de Checkins -->
+                    <td class="tabela-fonte-3">{{ True }}</td>
+                    <td class="coluna-acao">
+                        ddd
+                    </td>
+                </tr>
+            {% endfor %}
+
+            {% for cliente in clientes %}
+
+                <tr class="item-tabela">
+                    <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
+                    <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
+                    <!-- TODO Implementar fetch das hospedagens - Depende do Model de Checkins -->
+                    <td class="tabela-fonte-3">{{ True }}</td>
+                    <td class="coluna-acao">
                         ddd
                     </td>
                 </tr>
