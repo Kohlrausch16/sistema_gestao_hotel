@@ -1,6 +1,6 @@
 <aside>
     <nav>
-        <ul>
+        <ul class="menu-lateral-container">
 
             <!--Opções meramente ilustrativas-->
 
@@ -14,6 +14,12 @@
                 <a href="{% url 'listar_quartos' %}">Gerenciar quartos</a>
             </li>
 
+            <a href={% url "listagem_clientes" %}>
+                <li class="item-navegacao">
+                    <i class="fa-solid fa-users" id="icone-clientes"></i>
+                    Gerenciar clientes
+                </li>
+            </a>
         </ul>
     </nav>
 </aside>

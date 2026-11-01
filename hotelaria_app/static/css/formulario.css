@@ -60,6 +60,7 @@ label{
     font-size: 0.8rem;
     padding: 1rem;
     white-space: nowrap;
+    width: fit-content;
     border-radius: 7px;
     cursor: pointer;
     border: none;
@@ -68,8 +69,11 @@ label{
     text-decoration: none;
 }
 
-.botao-confirmar{
+.botao-confirmar, .botao-confirmar > a{
     color: #FFFFFF;
+}
+
+.botao-confirmar{
     background-color: #0F172A;
     border: 1px solid #0F172A;
 }

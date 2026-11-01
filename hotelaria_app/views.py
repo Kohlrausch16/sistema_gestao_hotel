@@ -5,6 +5,7 @@ from django.views.decorators.http import require_POST
 
 from hotelaria_app.models import Quarto
 
+from .models import *
 from .forms import ClienteForm
 from .forms import QuartoForm
 from .forms import EditarQuartoForm
@@ -12,6 +13,17 @@ from .forms import EditarQuartoForm
 def index(request):
 
     return render(request, "index.html")
+
+def listar_clientes(request):
+
+    clientes = Cliente.objects.all()
+
+    dados = {
+        "clientes": clientes
+    }
+
+    return render(request, "listagem_clientes.html", dados)
+
 
 def cadastrar_cliente(request):
 
