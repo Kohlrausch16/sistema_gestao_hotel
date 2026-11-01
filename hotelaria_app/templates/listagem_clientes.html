@@ -1,0 +1,95 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href={% static "css/formulario.css" %} />
+{% endblock %}
+
+
+{% block titulo_pagina %}
+
+<button class="botao-retornar"> < Voltar</button>
+<h1 class="titulo-pagina">CLIENTES</h1>
+
+{% endblock %}
+
+
+{% block main %}
+    
+    <div class="acoes-pagina-container">
+        <input class="campo-formulario placeholder-input input-cpf" placeholder="Informe o nome do cliente para buscar" />
+        <button class="botao-formulario botao-cancelar">Buscar</button>
+        <a href="{% url "cadastrar_cliente" %}" class="botao-formulario botao-confirmar">Adicionar cliente</a>
+    </div>
+
+    <table border="">
+        <thead>
+            <tr>
+                <th class="titulo-coluna-tabela coluna-nome">NOME</th>
+                <th class="titulo-coluna-tabela">CPF</th>
+                <th class="titulo-coluna-tabela">HOSPEDADO</th>
+                <th class="titulo-coluna-tabela">MOSTRAR MAIS</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for cliente in clientes %}
+
+                <tr class="item-tabela">
+                    <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
+                    <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
+                    <!-- TODO Implementar fetch das hospedagens - Depende do Model de Checkins -->
+                    <td class="tabela-fonte-3">{{ True }}</td>
+                    <td class="coluna-acao">
+                        ddd
+                    </td>
+                </tr>
+            {% endfor %}
+
+            {% for cliente in clientes %}
+
+                <tr class="item-tabela">
+                    <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
+                    <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
+                    <!-- TODO Implementar fetch das hospedagens - Depende do Model de Checkins -->
+                    <td class="tabela-fonte-3">{{ True }}</td>
+                    <td class="coluna-acao">
+                        ddd
+                    </td>
+                </tr>
+            {% endfor %}
+
+            {% for cliente in clientes %}
+
+                <tr class="item-tabela">
+                    <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
+                    <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
+                    <!-- TODO Implementar fetch das hospedagens - Depende do Model de Checkins -->
+                    <td class="tabela-fonte-3">{{ True }}</td>
+                    <td class="coluna-acao">
+                        ddd
+                    </td>
+                </tr>
+            {% endfor %}
+
+            {% for cliente in clientes %}
+
+                <tr class="item-tabela">
+                    <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
+                    <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
+                    <!-- TODO Implementar fetch das hospedagens - Depende do Model de Checkins -->
+                    <td class="tabela-fonte-3">{{ True }}</td>
+                    <td class="coluna-acao">
+                        ddd
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+
+{% block arquivos_js %}
+    <script src="{% static 'scripts/aplicarMascaraCpf.js' %}"></script>
+{% endblock %}

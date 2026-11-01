@@ -1,14 +1,15 @@
 <aside>
     <nav>
-        <ul>
+        <ul class="menu-lateral-container">
 
             <!--Opções meramente ilustrativas-->
 
-            <li class="item-navegacao">
-                <i class="fa-solid fa-users" id="icone-clientes"></i>
-                Gerenciar clientes
-            </li>
-
+            <a href={% url "listagem_clientes" %}>
+                <li class="item-navegacao">
+                    <i class="fa-solid fa-users" id="icone-clientes"></i>
+                    Gerenciar clientes
+                </li>
+            </a>
         </ul>
     </nav>
 </aside>
