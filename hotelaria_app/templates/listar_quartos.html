@@ -1,0 +1,96 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Quartos{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}">
+{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
+    <div class="cabecalho-quartos">
+        <div>
+            <h1 class="titulo-pagina">QUARTOS</h1>
+            <p class="subtitulo-quartos">Consulte os quartos cadastrados no hotel.</p>
+        </div>
+        <a class="botao-novo-quarto" href="{% url 'cadastrar_quarto' %}">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Cadastrar quarto
+        </a>
+    </div>
+{% endblock %}
+
+{% block main %}
+    <form class="pesquisa-quartos" method="get">
+        <input
+            type="search"
+            name="q"
+            value="{{ pesquisa }}"
+            placeholder="Pesquisar número do quarto"
+            aria-label="Pesquisar número do quarto"
+        >
+        <button type="submit">Pesquisar</button>
+    </form>
+    <section class="painel-quartos" aria-label="Lista de quartos">
+        <div class="painel-cabecalho">
+            <h2>Quartos cadastrados</h2>
+            <span class="contador-quartos">{{ quartos|length }} quarto{{ quartos|length|pluralize }}</span>
+        </div>
+
+        {% if quartos %}
+            <div class="tabela-rolagem">
+                <table class="tabela-quartos">
+                    <thead>
+                        <tr>
+                            <th scope="col">Número</th>
+                            <th scope="col">Tipo</th>
+                            <th scope="col">Preço da diária</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quarto in quartos %}
+                            <tr>
+                                <td class="numero-quarto">{{ quarto.numero }}</td>
+                                <td>{{ quarto.get_tipo_display }}</td>
+                                <td>R$ {{ quarto.preco_diaria|floatformat:2 }}</td>
+                                <td>
+                                    <span class="status-quarto status-{{ quarto.status|lower }}">
+                                        {{ quarto.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="acoes-quarto">
+                                        <a href="{% url 'editar_quarto' quarto.id %}" class="botao-editar" aria-label="Editar quarto {{ quarto.numero }}" title="Editar quarto">
+                                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                        </a>
+                                        <form action="{% url 'excluir_quarto' quarto.id %}" method="post" class="form-excluir-quarto">
+                                            {% csrf_token %}
+                                            <button type="submit" class="botao-excluir" aria-label="Excluir quarto {{ quarto.numero }}" title="Excluir quarto">
+                                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="lista-vazia">
+                <i class="fa-solid fa-bed" aria-hidden="true"></i>
+                {% if pesquisa %}
+                    <h3>Nenhum quarto encontrado</h3>
+                    <p>Tente pesquisar outro número.</p>
+                    <a href="{% url 'listar_quartos' %}">Limpar pesquisa</a>
+                {% else %}
+                    <h3>Nenhum quarto cadastrado</h3>
+                    <p>Cadastre o primeiro quarto para vê-lo nesta lista.</p>
+                    <a href="{% url 'cadastrar_quarto' %}">Cadastrar quarto</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

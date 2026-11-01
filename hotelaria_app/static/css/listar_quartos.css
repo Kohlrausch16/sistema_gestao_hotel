@@ -1,0 +1,236 @@
+.cabecalho-quartos{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.cabecalho-quartos .titulo-pagina{
+    margin: 0 0 0.35rem;
+}
+
+.subtitulo-quartos{
+    color: #64748B;
+    font: 0.875rem "Inter", sans-serif;
+}
+
+.botao-novo-quarto,
+.lista-vazia a{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1rem;
+    border-radius: 7px;
+    background: #0F172A;
+    color: #FFFFFF;
+    font: 700 0.8rem "Inter", sans-serif;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.botao-novo-quarto:hover,
+.lista-vazia a:hover{
+    background: #334155;
+}
+
+.painel-quartos{
+    overflow: hidden;
+    border: 1px solid #CBD5E1;
+    border-radius: 5px;
+    background: #FFFFFF;
+    font-family: "Inter", sans-serif;
+}
+
+.painel-cabecalho{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.painel-cabecalho h2{
+    margin: 0;
+    color: #0F172A;
+    font-size: 1rem;
+}
+
+.contador-quartos{
+    color: #64748B;
+    font-size: 0.8rem;
+}
+
+.tabela-rolagem{
+    overflow-x: auto;
+}
+
+.tabela-quartos{
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.tabela-quartos th,
+.tabela-quartos td{
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #E2E8F0;
+    font-size: 0.875rem;
+}
+
+.tabela-quartos th{
+    background: #F8FAFC;
+    color: #475569;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.tabela-quartos td{
+    color: #334155;
+}
+
+.tabela-quartos tbody tr:last-child td{
+    border-bottom: 0;
+}
+
+.tabela-quartos tbody tr:hover{
+    background: #F8FAFC;
+}
+
+.tabela-quartos .numero-quarto{
+    color: #0F172A;
+    font-weight: 700;
+}
+
+.status-quarto{
+    display: inline-block;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.status-ativo{
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.status-inativo{
+    background: #F1F5F9;
+    color: #475569;
+}
+
+.status-d{
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.status-o{
+    background: #DBEAFE;
+    color: #1D4ED8;
+}
+
+.status-m{
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.acoes-quarto{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-excluir-quarto{
+    margin: 0;
+}
+
+.botao-editar,
+.botao-excluir{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 5px;
+    background: #FFFFFF;
+    color: #334155;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.botao-editar:hover{
+    border-color: #3B82F6;
+    color: #1D4ED8;
+}
+
+.botao-excluir:hover{
+    border-color: #EF4444;
+    color: #B91C1C;
+}
+
+.lista-vazia{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 3rem 1rem;
+    color: #64748B;
+    text-align: center;
+}
+
+.lista-vazia > i{
+    color: #3B82F6;
+    font-size: 1.75rem;
+}
+
+.lista-vazia h3{
+    margin: 0;
+    color: #0F172A;
+    font-size: 1rem;
+}
+
+.lista-vazia p{
+    font-size: 0.875rem;
+}
+
+.pesquisa-quartos {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.pesquisa-quartos input {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 7px;
+    font: 0.875rem "Inter", sans-serif;
+}
+
+.pesquisa-quartos button {
+    padding: 0.8rem 1rem;
+    border: 0;
+    border-radius: 7px;
+    background: #0F172A;
+    color: #FFFFFF;
+    font: 700 0.8rem "Inter", sans-serif;
+    cursor: pointer;
+}
+
+@media (max-width: 800px){
+    .cabecalho-quartos{
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .painel-cabecalho,
+    .tabela-quartos th,
+    .tabela-quartos td{
+        padding: 1rem;
+    }
+}

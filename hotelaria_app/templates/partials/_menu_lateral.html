@@ -4,6 +4,16 @@
 
             <!--Opções meramente ilustrativas-->
 
+            <li class="item-navegacao">
+                <i class="fa-solid fa-users" id="icone-clientes"></i>
+                Gerenciar clientes
+            </li>
+
+            <li class="item-navegacao">
+                <i class="fa-solid fa-bed" id="icone-quartos"></i>
+                <a href="{% url 'listar_quartos' %}">Gerenciar quartos</a>
+            </li>
+
             <a href={% url "listagem_clientes" %}>
                 <li class="item-navegacao">
                     <i class="fa-solid fa-users" id="icone-clientes"></i>

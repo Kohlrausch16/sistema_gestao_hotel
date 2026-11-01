@@ -1,5 +1,5 @@
 from django import forms
-from .models import Cliente
+from .models import Cliente, Quarto
 
 class ClienteForm(forms.ModelForm):
 
@@ -99,4 +99,64 @@ class ClienteForm(forms.ModelForm):
                 "class": "campo-formulario placeholder-input input-email",
                 "placeholder": "Porto Alegre"
             })
+        }
+
+class QuartoForm(forms.ModelForm):
+    class Meta:
+        model = Quarto
+
+        fields = [
+            "numero",
+            "tipo",
+            "capacidade",
+            "preco_diaria"
+        ]
+
+        labels = {
+            "numero": "NUMERO",
+            "tipo": "TIPO",
+            "capacidade": "CAPACIDADE",
+            "preco_diaria": "PREÇO DIÁRIO"
+        }
+
+        widgets = {
+            "numero": forms.TextInput(attrs={
+                "class": "campo-formulario placeholder-input input-numero",
+                "placeholder": "101"
+            }),
+
+            "tipo": forms.Select(attrs={
+                "class": "campo-formulario placeholder-input input-tipo"
+            }),
+
+            "capacidade": forms.NumberInput(attrs={
+                "class": "campo-formulario placeholder-input input-capacidade",
+                "min": "1",
+                "step": "1"
+            }),
+
+            "preco_diaria": forms.NumberInput(attrs={
+                "class": "campo-formulario placeholder-input input-preco",
+                "placeholder": "100.00",
+                "min": "0",
+                "step": "0.01"
+            })
+        }
+
+    def clean_capacidade(self):
+        capacidade = self.cleaned_data["capacidade"]
+        if capacidade < 1:
+            raise forms.ValidationError("A capacidade deve ser de pelo menos 1 pessoa.")
+        return capacidade
+
+
+class EditarQuartoForm(QuartoForm):
+    class Meta(QuartoForm.Meta):
+        fields = [*QuartoForm.Meta.fields, "status"]
+        labels = {**QuartoForm.Meta.labels, "status": "STATUS"}
+        widgets = {
+            **QuartoForm.Meta.widgets,
+            "status": forms.Select(attrs={
+                "class": "campo-formulario placeholder-input input-status"
+            }),
         }
