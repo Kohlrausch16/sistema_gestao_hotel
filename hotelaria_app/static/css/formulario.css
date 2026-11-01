@@ -36,6 +36,36 @@ form{
     outline: none;
 }
 
+.campo-cliente{
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+
+.pesquisa-cliente{
+    margin-bottom: 0.5rem;
+}
+
+.campo-cliente-acoes{
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.campo-cliente-acoes .campo-formulario{
+    min-width: 0;
+}
+
+.botao-novo-cliente{
+    background-color: #0F172A;
+    color: #FFFFFF;
+    border: 1px solid #0F172A;
+}
+
+.botao-novo-cliente:hover{
+    background-color: #334155;
+}
+
 label{
     display: block;
     color: #475569;
@@ -93,5 +123,24 @@ label{
     form{
         display: flex;
         flex-direction: column;
+    }
+
+    .formulario-reserva{
+        box-sizing: border-box;
+        min-width: 0;
+        width: 100%;
+        padding: 1rem;
+    }
+
+    .formulario-reserva > div{
+        min-width: 0;
+    }
+
+    .formulario-reserva .container-botoes{
+        flex-wrap: wrap;
+    }
+
+    .botao-novo-cliente{
+        padding: 0.75rem;
     }
 }

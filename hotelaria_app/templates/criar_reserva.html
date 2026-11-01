@@ -4,7 +4,7 @@
 {% block title %}Criar reserva{% endblock %}
 
 {% block arquivos_css %}
-    <link rel="stylesheet" href="{% static 'css/formulario.css' %}">
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}?v=2">
 {% endblock %}
 
 {% block titulo_pagina %}
@@ -20,9 +20,13 @@
             <div role="alert">{{ formulario.non_field_errors }}</div>
         {% endif %}
 
-        <div>
+        <div class="campo-cliente">
             <label for="{{ formulario.cliente.id_for_label }}">{{ formulario.cliente.label }}</label>
-            {{ formulario.cliente }}
+            <input class="campo-formulario pesquisa-cliente" type="search" id="pesquisa-cliente" placeholder="Pesquisar cliente por CPF" aria-label="Pesquisar cliente por CPF" inputmode="numeric">
+            <div class="campo-cliente-acoes">
+                {{ formulario.cliente }}
+                <a class="botao-formulario botao-novo-cliente" href="{% url 'cadastrar_cliente' %}">Novo Cliente</a>
+            </div>
             {{ formulario.cliente.errors }}
         </div>
         <div>
@@ -46,4 +50,8 @@
             <button class="botao-formulario botao-confirmar" type="submit">CRIAR RESERVA</button>
         </div>
     </form>
+{% endblock %}
+
+{% block arquivos_js %}
+    <script src="{% static 'scripts/filtrarClientes.js' %}"></script>
 {% endblock %}

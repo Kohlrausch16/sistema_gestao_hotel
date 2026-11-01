@@ -164,6 +164,9 @@ class EditarQuartoForm(QuartoForm):
 class ReservaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["cliente"].label_from_instance = (
+            lambda cliente: f"{cliente} — CPF: {cliente.cpf}"
+        )
         self.fields["quarto"].queryset = Quarto.objects.filter(ativo=True)
 
     class Meta:

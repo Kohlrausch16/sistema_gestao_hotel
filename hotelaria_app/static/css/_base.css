@@ -10,6 +10,7 @@ body{
 main{
     display: flex;
     flex: 1;
+    min-width: 0;
 }
 
 button{
@@ -20,6 +21,7 @@ button{
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    min-width: 0;
     padding: 2rem 5rem;
     flex: 1;
     gap: 0.5rem;
@@ -118,4 +120,30 @@ aside a{
         padding: 2rem 1rem;
     }
 
+}
+
+@media(max-width: 600px){
+    main{
+        flex-direction: column;
+    }
+
+    aside{
+        width: 100%;
+        min-height: auto;
+        border-right: 0;
+        border-bottom: 1px solid #E2E8F0;
+    }
+
+    aside ul{
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin: 0;
+        padding: 0.5rem;
+    }
+
+    aside li{
+        flex: 1 1 auto;
+        justify-content: center;
+        padding: 0.5rem;
+    }
 }
