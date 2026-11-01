@@ -71,10 +71,20 @@ li{
     align-items: center;
     gap: 0.5rem;
     list-style: none;
-    padding: 0.7rem 5px 0.7rem calc(0.5rem + 5px);
     position: relative;
     overflow: hidden;
-    transition: background-color 0.5s, padding-left 0.5s, color 0.5s;
+    transition: background-color 0.5s, color 0.5s;
+}
+
+aside li > a{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.7rem 5px 0.7rem calc(0.5rem + 5px);
+    transition: padding-left 0.5s;
 }
 
 li::before {
@@ -88,11 +98,19 @@ li::before {
 }
 
 li:hover{
-    cursor: pointer;
     background-color: #E2E8F0;
     color: #11141a;
     border-radius: 0px 5px 5px 0px;
+}
+
+aside li:hover > a,
+aside li > a:focus-visible{
     padding-left: 1rem;
+}
+
+aside li > a:focus-visible{
+    outline: 2px solid #3B82F6;
+    outline-offset: -2px;
 }
 
 #icone-clientes{ color: #3B82F6; }
@@ -143,6 +161,10 @@ aside a{
 
     aside li{
         flex: 1 1 auto;
+        justify-content: center;
+    }
+
+    aside li > a{
         justify-content: center;
         padding: 0.5rem;
     }
