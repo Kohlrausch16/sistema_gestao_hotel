@@ -134,3 +134,15 @@ class QuartoForm(forms.ModelForm):
                 "step": "0.01"
             })
         }
+
+
+class EditarQuartoForm(QuartoForm):
+    class Meta(QuartoForm.Meta):
+        fields = [*QuartoForm.Meta.fields, "status"]
+        labels = {**QuartoForm.Meta.labels, "status": "STATUS"}
+        widgets = {
+            **QuartoForm.Meta.widgets,
+            "status": forms.Select(attrs={
+                "class": "campo-formulario placeholder-input input-status"
+            }),
+        }

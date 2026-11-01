@@ -1,10 +1,16 @@
 from django.db import models
 from .fields import BaseModel
 
-tipo_quarto_choices = [
+TIPO_QUARTO_CHOICES = [
     ('S', 'Simples'),
     ('D', 'Duplo'),
     ('T', 'Triplo'),
+]
+
+STATUS_QUARTO_CHOICES = [
+    ('D', 'Disponível'),
+    ('O', 'Ocupado'),
+    ('M', 'Manutenção'),
 ]
 
 class Cliente(BaseModel):
@@ -25,8 +31,9 @@ class Cliente(BaseModel):
 
 class Quarto(models.Model):
     numero = models.CharField(max_length=10)
-    tipo = models.CharField(max_length=1, choices=tipo_quarto_choices)
+    tipo = models.CharField(max_length=1, choices=TIPO_QUARTO_CHOICES)
     preco_diaria = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=1, default='D', choices=STATUS_QUARTO_CHOICES)
     ativo = models.BooleanField(default=True)
 
     def __str__(self):

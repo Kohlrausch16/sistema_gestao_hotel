@@ -52,16 +52,20 @@ label{
 }
 
 .botao-formulario{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-family: "Inter", sans-serif;
     font-weight: 700;
     font-size: 0.8rem;
     padding: 1rem;
-    width: min-content;
+    white-space: nowrap;
     border-radius: 7px;
     cursor: pointer;
     border: none;
     outline: none;
     transition: background-color 0.5s;
+    text-decoration: none;
 }
 
 .botao-confirmar{
