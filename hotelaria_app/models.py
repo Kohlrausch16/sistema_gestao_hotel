@@ -4,7 +4,7 @@ from .fields import BaseModel
 TIPO_QUARTO_CHOICES = [
     ('S', 'Simples'),
     ('D', 'Duplo'),
-    ('S', 'Suíte'),
+    ('U', 'Suíte'),
 ]
 
 STATUS_QUARTO_CHOICES = [
