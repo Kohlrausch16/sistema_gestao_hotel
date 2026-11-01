@@ -39,3 +39,13 @@ class Quarto(models.Model):
 
     def __str__(self):
         return self.numero + " - " + self.tipo
+
+class Reserva(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    quarto = models.ForeignKey(Quarto, on_delete=models.CASCADE)
+    data_entrada = models.DateField()
+    data_saida = models.DateField()
+    ativo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Reserva de {self.cliente} no quarto {self.quarto} de {self.data_entrada} a {self.data_saida}"

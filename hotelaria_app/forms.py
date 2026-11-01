@@ -1,5 +1,5 @@
 from django import forms
-from .models import Cliente, Quarto
+from .models import Cliente, Quarto, Reserva
 
 class ClienteForm(forms.ModelForm):
 
@@ -158,5 +158,55 @@ class EditarQuartoForm(QuartoForm):
             **QuartoForm.Meta.widgets,
             "status": forms.Select(attrs={
                 "class": "campo-formulario placeholder-input input-status"
+            }),
+        }
+
+class ReservaForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["quarto"].queryset = Quarto.objects.filter(ativo=True)
+
+    class Meta:
+        model = Reserva
+
+        fields = [
+            "cliente",
+            "quarto",
+            "data_entrada",
+            "data_saida"
+        ]
+
+        labels = {
+            "cliente": "CLIENTE",
+            "quarto": "QUARTO",
+            "data_entrada": "DATA DE ENTRADA",
+            "data_saida": "DATA DE SAÍDA"
+        }
+
+        widgets = {
+            "cliente": forms.Select(attrs={
+                "class": "campo-formulario placeholder-input input-cliente"
+            }),
+
+            "quarto": forms.Select(attrs={
+                "class": "campo-formulario placeholder-input input-quarto"
+            }),
+
+            "data_entrada": forms.DateInput(attrs={
+                "type": "date",
+                "class": "campo-formulario placeholder-input input-data-entrada",
+                "placeholder": "01/01/2024"
+            },
+            format = {
+                "%Y-%m-%d"
+            }),
+
+            "data_saida": forms.DateInput(attrs={
+                "type": "date",
+                "class": "campo-formulario placeholder-input input-data-saida",
+                "placeholder": "05/01/2024"
+            },
+            format = {
+                "%Y-%m-%d"
             }),
         }

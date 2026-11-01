@@ -3,9 +3,9 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 
-from hotelaria_app.models import Quarto
+from hotelaria_app.models import Quarto, Reserva
 
-from .forms import ClienteForm
+from .forms import ClienteForm, ReservaForm
 from .forms import QuartoForm
 from .forms import EditarQuartoForm
 
@@ -96,3 +96,27 @@ def excluir_quarto(request, quarto_id):
     messages.success(request, mensagem_confirmacao)
 
     return redirect('listar_quartos')
+
+def criar_reserva(request):
+    form = ReservaForm(request.POST or None)
+
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Reserva criada com sucesso!")
+            return redirect('listar_reservas')
+
+    dados = {
+        "formulario": form,
+    }
+    return render(request, "criar_reserva.html", dados)
+
+def listar_reservas(request):
+    reservas = Reserva.objects.all()
+    reservas = reservas.filter(ativo=True)
+
+    dados = {
+        "reservas": reservas,
+    }
+
+    return render(request, "listar_reservas.html", dados)

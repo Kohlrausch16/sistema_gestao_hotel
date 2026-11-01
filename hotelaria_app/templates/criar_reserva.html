@@ -1,0 +1,49 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Criar reserva{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}">
+{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
+    <h1 class="titulo-pagina">CRIAR RESERVA</h1>
+{% endblock %}
+
+{% block main %}
+    <form class="formulario-reserva" method="post" action="{% url 'criar_reserva' %}">
+        {% csrf_token %}
+
+        {% if formulario.non_field_errors %}
+            <div role="alert">{{ formulario.non_field_errors }}</div>
+        {% endif %}
+
+        <div>
+            <label for="{{ formulario.cliente.id_for_label }}">{{ formulario.cliente.label }}</label>
+            {{ formulario.cliente }}
+            {{ formulario.cliente.errors }}
+        </div>
+        <div>
+            <label for="{{ formulario.quarto.id_for_label }}">{{ formulario.quarto.label }}</label>
+            {{ formulario.quarto }}
+            {{ formulario.quarto.errors }}
+        </div>
+        <div>
+            <label for="{{ formulario.data_entrada.id_for_label }}">{{ formulario.data_entrada.label }}</label>
+            {{ formulario.data_entrada }}
+            {{ formulario.data_entrada.errors }}
+        </div>
+        <div>
+            <label for="{{ formulario.data_saida.id_for_label }}">{{ formulario.data_saida.label }}</label>
+            {{ formulario.data_saida }}
+            {{ formulario.data_saida.errors }}
+        </div>
+
+        <div class="container-botoes">
+            <a class="botao-formulario botao-cancelar" href="{% url 'listar_reservas' %}">CANCELAR</a>
+            <button class="botao-formulario botao-confirmar" type="submit">CRIAR RESERVA</button>
+        </div>
+    </form>
+{% endblock %}

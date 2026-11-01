@@ -1,0 +1,62 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Reservas{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}">
+{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
+    <div class="cabecalho-quartos">
+        <div>
+            <h1 class="titulo-pagina">RESERVAS</h1>
+            <p class="subtitulo-quartos">Consulte as reservas cadastradas no hotel.</p>
+        </div>
+        <a class="botao-novo-quarto" href="{% url 'criar_reserva' %}">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Criar reserva
+        </a>
+    </div>
+{% endblock %}
+
+{% block main %}
+    <section class="painel-quartos" aria-label="Lista de reservas">
+        <div class="painel-cabecalho">
+            <h2>Reservas cadastradas</h2>
+            <span class="contador-quartos">{{ reservas|length }} reserva{{ reservas|length|pluralize }}</span>
+        </div>
+
+        {% if reservas %}
+            <div class="tabela-rolagem">
+                <table class="tabela-quartos">
+                    <thead>
+                        <tr>
+                            <th scope="col">Cliente</th>
+                            <th scope="col">Quarto</th>
+                            <th scope="col">Entrada</th>
+                            <th scope="col">Saída</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas %}
+                            <tr>
+                                <td>{{ reserva.cliente }}</td>
+                                <td class="numero-quarto">{{ reserva.quarto.numero }}</td>
+                                <td>{{ reserva.data_entrada|date:"d/m/Y" }}</td>
+                                <td>{{ reserva.data_saida|date:"d/m/Y" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="lista-vazia">
+                <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+                <h3>Nenhuma reserva cadastrada</h3>
+                <p>Crie a primeira reserva para vê-la nesta lista.</p>
+                <a href="{% url 'criar_reserva' %}">Criar reserva</a>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
