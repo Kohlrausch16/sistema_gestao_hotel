@@ -20,10 +20,10 @@ button{
 .container{
     display: flex;
     flex-direction: column;
+    flex: 1;
     box-sizing: border-box;
     min-width: 0;
     padding: 2rem 5rem;
-    flex: 1;
     gap: 0.5rem;
 }
 
@@ -58,7 +58,11 @@ nav{
     padding: 0 5px;
 }
 
-ul{
+a{
+    text-decoration: none;
+}
+
+.menu-lateral-container{
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -66,7 +70,7 @@ ul{
     gap: 0.5rem;
 }
 
-li{
+.item-navegacao{
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -87,7 +91,7 @@ aside li > a{
     transition: padding-left 0.5s;
 }
 
-li::before {
+.menu-lateral-container .item-navegacao::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -97,7 +101,8 @@ li::before {
   pointer-events: none;
 }
 
-li:hover{
+.menu-lateral-container .item-navegacao:hover{
+    cursor: pointer;
     background-color: #E2E8F0;
     color: #11141a;
     border-radius: 0px 5px 5px 0px;

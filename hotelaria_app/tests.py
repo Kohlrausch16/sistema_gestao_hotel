@@ -247,3 +247,19 @@ class DisponibilidadeQuartosTests(TestCase):
 
         resposta = self.client.get(reverse("listar_reservas"))
         self.assertNotContains(resposta, self.ocupado.numero)
+
+
+class IntegracaoClientesTests(TestCase):
+    def test_menu_e_paginas_de_clientes(self):
+        resposta = self.client.get(reverse("listagem_clientes"))
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, reverse("cadastrar_cliente"))
+        self.assertContains(resposta, reverse("listar_reservas"))
+
+        cadastro = self.client.get(reverse("cadastrar_cliente"))
+        self.assertEqual(cadastro.status_code, 200)
+
+    def test_cadastro_invalido_nao_salva_cliente(self):
+        resposta = self.client.post(reverse("cadastrar_cliente"), {})
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(Cliente.objects.count(), 0)

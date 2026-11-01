@@ -7,8 +7,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
-from hotelaria_app.models import Quarto, Reserva
-
+from .models import Cliente, Quarto, Reserva
 from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis
 from .forms import ClienteForm, ReservaForm
 from .forms import QuartoForm
@@ -18,29 +17,30 @@ def index(request):
 
     return render(request, "index.html")
 
-def cadastrar_cliente(request):
+def listar_clientes(request):
 
-    form = ClienteForm()
+    clientes = Cliente.objects.all()
 
     dados = {
-        'formulario': form
+        "clientes": clientes
     }
 
-    if(request.method == "POST"):
+    return render(request, "listagem_clientes.html", dados)
 
-        form = ClienteForm(request.POST)
 
-        if(form.is_valid):
+def cadastrar_cliente(request):
+    form = ClienteForm(request.POST or None)
+
+    if request.method == "POST":
+        if form.is_valid():
             form.save()
 
             mensagem_confirmacao = "Cliente cadastrado com sucesso!"
             messages.success(request, mensagem_confirmacao)
 
-            # TODO - Alterar o redirecionamento para a página de listagem de clientes
-            return redirect('index')
+            return redirect('listagem_clientes')
 
-
-    return render(request, "cadastrar_cliente.html", dados)
+    return render(request, "cadastrar_cliente.html", {'formulario': form})
 
 def cadastrar_quarto(request):
     form = QuartoForm(request.POST or None)
