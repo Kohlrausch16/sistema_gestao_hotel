@@ -23,7 +23,7 @@
         {{ formulario.as_p }}
 
         <div class="container-botoes">
-            <button class="botao-formulario botao-cancelar" type="button">CANCELAR</button>
+            <a class="botao-formulario botao-cancelar" href="{% url 'listar_quartos' %}">CANCELAR</a>
             <button class="botao-formulario botao-confirmar" type="submit">CADASTRAR</button>
         </div>
     </form>

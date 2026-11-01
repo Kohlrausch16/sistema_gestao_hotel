@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
 
+from hotelaria_app.models import Quarto
+
 from .forms import ClienteForm
 from .forms import QuartoForm
 
@@ -47,3 +49,12 @@ def cadastrar_quarto(request):
 
 
     return render(request, "cadastrar_quarto.html", {'formulario': form})
+
+def listar_quartos(request):
+    quartos = Quarto.objects.all()
+    
+    dados = {
+        'quartos': quartos
+    }
+
+    return render(request, "listar_quartos.html", dados)

@@ -94,6 +94,12 @@ li:hover{
 }
 
 #icone-clientes{ color: #3B82F6; }
+#icone-quartos{ color: #3B82F6; }
+
+aside a{
+    color: inherit;
+    text-decoration: none;
+}
 
 .botao-retornar{
     background-color: transparent;
