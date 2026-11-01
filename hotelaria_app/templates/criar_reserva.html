@@ -4,7 +4,7 @@
 {% block title %}Criar reserva{% endblock %}
 
 {% block arquivos_css %}
-    <link rel="stylesheet" href="{% static 'css/formulario.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}?v=4">
 {% endblock %}
 
 {% block titulo_pagina %}
@@ -30,11 +30,6 @@
             {{ formulario.cliente.errors }}
         </div>
         <div>
-            <label for="{{ formulario.quarto.id_for_label }}">{{ formulario.quarto.label }}</label>
-            {{ formulario.quarto }}
-            {{ formulario.quarto.errors }}
-        </div>
-        <div>
             <label for="{{ formulario.data_entrada.id_for_label }}">{{ formulario.data_entrada.label }}</label>
             {{ formulario.data_entrada }}
             {{ formulario.data_entrada.errors }}
@@ -43,6 +38,14 @@
             <label for="{{ formulario.data_saida.id_for_label }}">{{ formulario.data_saida.label }}</label>
             {{ formulario.data_saida }}
             {{ formulario.data_saida.errors }}
+        </div>
+        <div>
+            <label for="{{ formulario.quarto.id_for_label }}">{{ formulario.quarto.label }}</label>
+            <div data-disponibilidade-url="{% url 'quartos_disponiveis' %}">
+                {{ formulario.quarto }}
+                <p id="mensagem-disponibilidade" role="status" aria-live="polite"></p>
+            </div>
+            {{ formulario.quarto.errors }}
         </div>
 
         <div class="container-botoes">
@@ -54,4 +57,5 @@
 
 {% block arquivos_js %}
     <script src="{% static 'scripts/filtrarClientes.js' %}"></script>
+    <script src="{% static 'scripts/quartosDisponiveis.js' %}"></script>
 {% endblock %}

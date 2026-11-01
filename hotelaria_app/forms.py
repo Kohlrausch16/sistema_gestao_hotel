@@ -1,4 +1,7 @@
 from django import forms
+from datetime import date
+
+from .disponibilidade import quartos_disponiveis
 from .models import Cliente, Quarto, Reserva
 
 class ClienteForm(forms.ModelForm):
@@ -167,7 +170,28 @@ class ReservaForm(forms.ModelForm):
         self.fields["cliente"].label_from_instance = (
             lambda cliente: f"{cliente} — CPF: {cliente.cpf}"
         )
-        self.fields["quarto"].queryset = Quarto.objects.filter(ativo=True)
+        self.fields["quarto"].queryset = Quarto.objects.none()
+        self.fields["quarto"].error_messages["invalid_choice"] = (
+            "Este quarto não está disponível nas datas escolhidas."
+        )
+
+        if self.is_bound:
+            try:
+                entrada = date.fromisoformat(self.data.get("data_entrada", ""))
+                saida = date.fromisoformat(self.data.get("data_saida", ""))
+            except (TypeError, ValueError):
+                return
+
+            if saida > entrada:
+                self.fields["quarto"].queryset = quartos_disponiveis(entrada, saida)
+
+    def clean(self):
+        dados = super().clean()
+        entrada = dados.get("data_entrada")
+        saida = dados.get("data_saida")
+        if entrada and saida and saida <= entrada:
+            self.add_error("data_saida", "A saída deve ser posterior à entrada.")
+        return dados
 
     class Meta:
         model = Reserva

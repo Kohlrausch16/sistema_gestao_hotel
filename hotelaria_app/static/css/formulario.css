@@ -118,6 +118,31 @@ label{
     background-color: #cdcfd1;
 }
 
+.formulario-reserva{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.formulario-reserva > div{
+    min-width: 0;
+}
+
+.formulario-reserva .campo-formulario,
+.formulario-reserva .botao-formulario{
+    box-sizing: border-box;
+    height: 44px;
+}
+
+.formulario-reserva .botao-formulario{
+    padding: 0 1rem;
+}
+
+.formulario-reserva .container-botoes{
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
 @media(max-width: 800px){
     
     form{

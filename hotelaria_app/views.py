@@ -1,10 +1,14 @@
+from datetime import date
+
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
-from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET, require_POST
 
 from hotelaria_app.models import Quarto, Reserva
 
+from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis
 from .forms import ClienteForm, ReservaForm
 from .forms import QuartoForm
 from .forms import EditarQuartoForm
@@ -110,6 +114,28 @@ def criar_reserva(request):
         "formulario": form,
     }
     return render(request, "criar_reserva.html", dados)
+
+
+@require_GET
+def quartos_disponiveis(request):
+    try:
+        entrada = date.fromisoformat(request.GET["entrada"])
+        saida = date.fromisoformat(request.GET["saida"])
+    except (KeyError, ValueError):
+        return JsonResponse({"erro": "Informe datas válidas."}, status=400)
+
+    if saida <= entrada:
+        return JsonResponse(
+            {"erro": "A saída deve ser posterior à entrada."}, status=400
+        )
+
+    quartos = buscar_quartos_disponiveis(entrada, saida)
+    return JsonResponse({
+        "quartos": [
+            {"id": quarto.id, "numero": quarto.numero, "tipo": quarto.get_tipo_display()}
+            for quarto in quartos
+        ]
+    })
 
 def listar_reservas(request):
     reservas = Reserva.objects.all()
