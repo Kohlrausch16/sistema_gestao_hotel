@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 
 from .forms import ClienteForm
+from .forms import QuartoForm
 
 def index(request):
 
@@ -31,3 +32,18 @@ def cadastrar_cliente(request):
 
 
     return render(request, "cadastrar_cliente.html", dados)
+
+def cadastrar_quarto(request):
+    form = QuartoForm(request.POST or None)
+
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+
+            mensagem_confirmacao = "Quarto cadastrado com sucesso!"
+            messages.success(request, mensagem_confirmacao)
+
+            return redirect('index')
+
+
+    return render(request, "cadastrar_quarto.html", {'formulario': form})

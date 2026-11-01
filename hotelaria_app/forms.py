@@ -1,5 +1,5 @@
 from django import forms
-from .models import Cliente
+from .models import Cliente, Quarto
 
 class ClienteForm(forms.ModelForm):
 
@@ -98,5 +98,39 @@ class ClienteForm(forms.ModelForm):
             "cidade": forms.TextInput(attrs={
                 "class": "campo-formulario placeholder-input input-email",
                 "placeholder": "Porto Alegre"
+            })
+        }
+
+class QuartoForm(forms.ModelForm):
+    class Meta:
+        model = Quarto
+
+        fields = [
+            "numero",
+            "tipo",
+            "preco_diaria"
+        ]
+
+        labels = {
+            "numero": "NUMERO",
+            "tipo": "TIPO",
+            "preco_diaria": "PREÇO DIÁRIO"
+        }
+
+        widgets = {
+            "numero": forms.TextInput(attrs={
+                "class": "campo-formulario placeholder-input input-numero",
+                "placeholder": "101"
+            }),
+
+            "tipo": forms.Select(attrs={
+                "class": "campo-formulario placeholder-input input-tipo"
+            }),
+
+            "preco_diaria": forms.NumberInput(attrs={
+                "class": "campo-formulario placeholder-input input-preco",
+                "placeholder": "100.00",
+                "min": "0",
+                "step": "0.01"
             })
         }
