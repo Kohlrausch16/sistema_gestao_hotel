@@ -219,7 +219,18 @@ def cadastrar_funcionario(request):
                 f'Funcionário {nome} cadastrado com sucesso!'
             )
 
-            return redirect('cadastrar_funcionario')
+            return redirect('listar_funcionarios')
+        else:
+            messages.error(
+                request,
+                'Erro ao cadastrar funcionário. Verifique os dados e tente novamente.'
+            )
+            
+            dados = {
+                'formulario': formulario_de_funcionario,
+                'cargos': Funcionario.CARGOS
+            }
+            return render(request, 'cadastrar_funcionario.html', dados)
 
     else:
         formulario_de_funcionario = UserCreationForm()
