@@ -36,6 +36,36 @@ form{
     outline: none;
 }
 
+.campo-cliente{
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+
+.pesquisa-cliente{
+    margin-bottom: 0.5rem;
+}
+
+.campo-cliente-acoes{
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.campo-cliente-acoes .campo-formulario{
+    min-width: 0;
+}
+
+.botao-novo-cliente{
+    background-color: #0F172A;
+    color: #FFFFFF;
+    border: 1px solid #0F172A;
+}
+
+.botao-novo-cliente:hover{
+    background-color: #334155;
+}
+
 label{
     display: block;
     color: #475569;
@@ -52,20 +82,28 @@ label{
 }
 
 .botao-formulario{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-family: "Inter", sans-serif;
     font-weight: 700;
     font-size: 0.8rem;
     padding: 1rem;
-    width: min-content;
+    white-space: nowrap;
+    width: fit-content;
     border-radius: 7px;
     cursor: pointer;
     border: none;
     outline: none;
     transition: background-color 0.5s;
+    text-decoration: none;
+}
+
+.botao-confirmar, .botao-confirmar > a{
+    color: #FFFFFF;
 }
 
 .botao-confirmar{
-    color: #FFFFFF;
     background-color: #0F172A;
     border: 1px solid #0F172A;
 }
@@ -84,6 +122,31 @@ label{
     background-color: #cdcfd1;
 }
 
+.formulario-reserva{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.formulario-reserva > div{
+    min-width: 0;
+}
+
+.formulario-reserva .campo-formulario,
+.formulario-reserva .botao-formulario{
+    box-sizing: border-box;
+    height: 44px;
+}
+
+.formulario-reserva .botao-formulario{
+    padding: 0 1rem;
+}
+
+.formulario-reserva .container-botoes{
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
 @media(max-width: 800px){
     
     form{
@@ -91,8 +154,6 @@ label{
         flex-direction: column;
     }
 }
-
-/*funcionarios*/
 
 .funcionario-pagina {
 	display: flex;
@@ -339,4 +400,23 @@ label{
 	.funcionario-tabela-container {
 		border-color: #CBD5E1;
 	}
+
+    .formulario-reserva{
+        box-sizing: border-box;
+        min-width: 0;
+        width: 100%;
+        padding: 1rem;
+    }
+
+    .formulario-reserva > div{
+        min-width: 0;
+    }
+
+    .formulario-reserva .container-botoes{
+        flex-wrap: wrap;
+    }
+
+    .botao-novo-cliente{
+        padding: 0.75rem;
+    }
 }

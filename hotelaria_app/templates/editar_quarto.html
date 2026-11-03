@@ -1,0 +1,25 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Editar quarto {{ quarto.numero }}{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}">
+{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
+    <h1 class="titulo-pagina">EDITAR QUARTO {{ quarto.numero }}</h1>
+{% endblock %}
+
+{% block main %}
+    <form class="formulario-quarto" action="{% url 'editar_quarto' quarto.id %}" method="post">
+        {% csrf_token %}
+        {{ formulario.as_p }}
+
+        <div class="container-botoes">
+            <a class="botao-formulario botao-cancelar" href="{% url 'listar_quartos' %}">CANCELAR</a>
+            <button class="botao-formulario botao-confirmar" type="submit">SALVAR ALTERAÇÕES</button>
+        </div>
+    </form>
+{% endblock %}

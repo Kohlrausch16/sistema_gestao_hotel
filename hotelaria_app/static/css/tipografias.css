@@ -19,3 +19,24 @@
     color: #0F172A;
     font-family: "Inter", sans-serif;
 }
+
+.titulo-coluna-tabela{
+    color: #475569;
+    font-family: "Inter", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.tabela-fonte-1{
+    color: #1E293B;
+    font-family: "Inter", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.tabela-fonte-2{
+    font-family: "Montserrat", sans-serif;
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: #475569;
+}

@@ -1,12 +1,26 @@
 <aside>
     <nav>
-        <ul>
-
-            <!--Opções meramente ilustrativas-->
+        <ul class="menu-lateral-container">
 
             <li class="item-navegacao">
-                <i class="fa-solid fa-users" id="icone-clientes"></i>
-                Gerenciar clientes
+                <a href="{% url 'listagem_clientes' %}">
+                    <i class="fa-solid fa-users" id="icone-clientes" aria-hidden="true"></i>
+                    Gerenciar clientes
+                </a>
+            </li>
+
+            <li class="item-navegacao">
+                <a href="{% url 'listar_quartos' %}">
+                    <i class="fa-solid fa-bed" id="icone-quartos" aria-hidden="true"></i>
+                    Gerenciar quartos
+                </a>
+            </li>
+
+            <li class="item-navegacao">
+                <a href="{% url 'listar_reservas' %}">
+                    <i class="fa-solid fa-calendar-days" id="icone-reservas" aria-hidden="true"></i>
+                    Gerenciar reservas
+                </a>
             </li>
             <li class="item-navegacao">
                 <a href="{% url 'listar_funcionarios' %}">

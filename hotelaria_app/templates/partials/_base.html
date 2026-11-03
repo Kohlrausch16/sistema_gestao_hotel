@@ -11,9 +11,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href={% static "css/_base.css" %} />
+    <link rel="stylesheet" href="{% static 'css/_base.css' %}?v=2" />
     <link rel="stylesheet" href={% static "css/tipografias.css" %} />
     <link rel="stylesheet" href={% static "css/_mensagem.css" %} />
+    <link rel="stylesheet" href={% static "css/utils.css" %} />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous">
     
     {% block arquivos_css %} {% endblock %}
@@ -23,7 +24,7 @@
     <title>{% block title %} {% endblock %}</title>
 </head>
 
-<body>
+<body data-home-url="{% url 'index' %}">
 
     {% include "partials/_menu.html" %}
 
@@ -40,7 +41,7 @@
         </div>        
     </main>
 
-    <script src="{% static 'scripts/botaoRetornar.js' %}"></script>
+    <script src="{% static 'scripts/botaoRetornar.js' %}?v=2"></script>
     <script src="{% static 'scripts/botaoLimparFormulario.js' %}"></script>
     {% block arquivos_js %} {% endblock %}
 
