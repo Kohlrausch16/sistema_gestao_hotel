@@ -1,6 +1,7 @@
 from django.db import models
 from .fields import BaseModel
 
+from django.contrib.auth.models import User
 TIPO_QUARTO_CHOICES = [
     ('S', 'Simples'),
     ('D', 'Duplo'),
@@ -35,6 +36,23 @@ class Cliente(BaseModel):
     def __str__(self):
         return self.nome + " " + self.sobrenome
 
+class Funcionario(models.Model):
+
+    CARGOS = [
+
+        ('gerente', 'Gerente'),
+        ('recepcionista', 'Recepcionista'),
+        ('cozinheiro', 'Cozinheiro'),
+        ('camareira', 'Camareira')
+
+    ]
+
+    nome = models.CharField(max_length=100)
+    cargo = models.CharField(max_length=100, choices=CARGOS)
+    usuario = models.OneToOneField(User, on_delete = models.CASCADE)
+
+    def __str__(self):
+        return self.nome
 class Quarto(models.Model):
     numero = models.CharField(max_length=10)
     tipo = models.CharField(max_length=1, choices=TIPO_QUARTO_CHOICES)

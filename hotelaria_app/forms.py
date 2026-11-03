@@ -2,7 +2,7 @@ from django import forms
 from datetime import date
 
 from .disponibilidade import quartos_disponiveis
-from .models import Cliente, Quarto, Reserva
+from .models import Cliente, Quarto, Reserva, Funcionario
 
 class ClienteForm(forms.ModelForm):
 
@@ -104,6 +104,11 @@ class ClienteForm(forms.ModelForm):
             })
         }
 
+class FuncionarioForm(forms.ModelForm):
+    class Meta:
+        model = Funcionario
+        fields = ['nome', 'cargo']
+        
 class QuartoForm(forms.ModelForm):
     class Meta:
         model = Quarto

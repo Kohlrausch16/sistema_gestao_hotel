@@ -1,0 +1,33 @@
+HTML
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}" />
+{% endblock %}
+
+{% block title %}Editar Funcionário{% endblock %}
+
+{% block titulo_pagina %}
+
+<button class="botao-retornar funcionario-botao-retornar" type="button" onclick="history.back()">Voltar</button>
+
+<h1 class="funcionario-titulo-pagina">EDITAR FUNCIONÁRIO</h1>
+
+{% endblock %}
+
+{% block main %}
+    <section class="funcionario-pagina funcionario-pagina-formulario">
+        <form class="funcionario-formulario" method="post">
+
+            {% csrf_token %}
+
+            {{ formulario.as_p }}
+
+            <div class="funcionario-formulario-acoes">
+                <button class="funcionario-botao funcionario-botao-primario" type="submit">Salvar</button>
+            </div>
+
+        </form>
+    </section>
+{% endblock %}
