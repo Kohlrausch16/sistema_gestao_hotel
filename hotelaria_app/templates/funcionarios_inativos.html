@@ -1,0 +1,44 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}" />
+{% endblock %}
+
+{% block title %}Funcionários Inativos{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar funcionario-botao-retornar" type="button" onclick="history.back()">Voltar</button>
+    <h1 class="funcionario-titulo-pagina">FUNCIONÁRIOS INATIVOS</h1>
+{% endblock %}
+
+{% block main %}
+    <section class="funcionario-pagina funcionario-pagina-lista">
+    <div class="funcionario-tabela-container">
+        <table class="funcionario-tabela">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Cargo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for funcionario in funcionarios %}
+                    <tr>
+                        <td>{{ funcionario.nome }}</td>
+                        <td>{{ funcionario.get_cargo_display }}</td>
+                        <td>
+                            <a class="funcionario-acao-tabela funcionario-acao-ativar" href="{% url 'ativar_funcionario' funcionario.id %}">Ativar</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">Nenhum funcionário inativo encontrado.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </section>
+{% endblock %}

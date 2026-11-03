@@ -1,0 +1,54 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}" />
+{% endblock %}
+
+{% block titulo_pagina %}
+
+<button class="botao-retornar funcionario-botao-retornar" type="button">Voltar</button>
+<h1 class="funcionario-titulo-pagina">CADASTRAR FUNCIONÁRIO</h1>
+
+{% endblock %}
+
+{% block main %}
+
+<section class="funcionario-pagina funcionario-pagina-formulario">
+<form class="funcionario-formulario" method="POST">
+
+    {% csrf_token %}
+
+    <label class="funcionario-label" for="funcionario-nome">Nome:</label>
+    <input class="funcionario-campo" id="funcionario-nome" type="text" name="nome" required>
+
+    {{ formulario.as_p }}
+
+    <label class="funcionario-label" for="funcionario-cargo">Cargo:</label>
+
+    <select class="funcionario-campo" id="funcionario-cargo" name="cargo" required>
+        <option value="">Selecione um cargo</option>
+
+        {% for valor, cargo in cargos %}
+            <option value="{{ valor }}">
+                {{ cargo }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <div class="funcionario-formulario-acoes">
+
+        <button class="funcionario-botao funcionario-botao-secundario botao-cancelar" type="button">
+            CANCELAR
+        </button>
+
+        <button class="funcionario-botao funcionario-botao-primario" type="submit">
+            CADASTRAR
+        </button>
+
+    </div>
+
+</form>
+</section>
+
+{% endblock %}

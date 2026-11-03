@@ -1,5 +1,6 @@
 from django import forms
 from .models import Cliente
+from .models import Funcionario
 
 class ClienteForm(forms.ModelForm):
 
@@ -100,3 +101,9 @@ class ClienteForm(forms.ModelForm):
                 "placeholder": "Porto Alegre"
             })
         }
+
+class FuncionarioForm(forms.ModelForm):
+
+    class Meta:
+        model = Funcionario
+        fields = ['nome', 'cargo']

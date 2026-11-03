@@ -1,6 +1,8 @@
 from django.db import models
 from .fields import BaseModel
 
+from django.contrib.auth.models import User
+
 class Cliente(BaseModel):
     nome = models.CharField(max_length=100)
     sobrenome = models.CharField(max_length=100)
@@ -16,3 +18,21 @@ class Cliente(BaseModel):
 
     def __str__(self):
         return self.nome + " " + self.sobrenome
+
+class Funcionario(models.Model):
+
+    CARGOS = [
+
+        ('gerente', 'Gerente'),
+        ('recepcionista', 'Recepcionista'),
+        ('cozinheiro', 'Cozinheiro'),
+        ('camareira', 'Camareira')
+
+    ]
+
+    nome = models.CharField(max_length=100)
+    cargo = models.CharField(max_length=100, choices=CARGOS)
+    usuario = models.OneToOneField(User, on_delete = models.CASCADE)
+
+    def __str__(self):
+        return self.nome

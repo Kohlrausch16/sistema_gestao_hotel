@@ -1,0 +1,89 @@
+HTML
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}" />
+{% endblock %}
+
+{% block titulo_pagina %}
+
+<button class="botao-retornar funcionario-botao-retornar" type="button" onclick="history.back()">Voltar</button>
+
+<h1 class="funcionario-titulo-pagina">LISTA DE FUNCIONÁRIOS</h1>
+
+{% endblock %}
+
+{% block main %}
+    <section class="funcionario-pagina funcionario-pagina-lista">
+
+    <div class="funcionario-busca">
+        <form class="funcionario-formulario funcionario-formulario-pesquisa" method="GET">
+            <input
+                class="funcionario-campo"
+                type="text"
+                name="nome_da_pesquisa"
+                placeholder="Pesquisar funcionário"
+                value="{{ nome_da_pesquisa }}"
+            >
+            <button class="funcionario-botao funcionario-botao-primario" type="submit">Pesquisar</button>
+        </form>
+    </div>
+
+    <h2 class="funcionario-subtitulo">Lista de Funcionários</h2>
+
+    <div class="funcionario-acoes-lista">
+
+    <a class="funcionario-botao funcionario-botao-primario" href="{% url 'cadastrar_funcionario' %}">
+        Cadastrar Funcionário
+    </a>
+
+    <a class="funcionario-botao funcionario-botao-secundario" href="{% url 'funcionarios_inativos' %}">
+        Funcionários Inativos
+    </a>
+    </div>
+
+    <div class="funcionario-tabela-container">
+        <table class="funcionario-tabela">
+
+            <thead>
+                <tr>
+                    <th>
+                        Nome
+                        <a class="funcionario-ordenacao" aria-label="Ordenar por nome crescente" href="?ordem=crescente&nome_da_pesquisa={{ nome_da_pesquisa }}">↑</a>
+                        <a class="funcionario-ordenacao" aria-label="Ordenar por nome decrescente" href="?ordem=decrescente&nome_da_pesquisa={{ nome_da_pesquisa }}">↓</a>
+                    </th>
+                    <th>Cargo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for funcionario in funcionarios %}
+
+                    <tr>
+                        <td>{{ funcionario.nome }}</td>
+                        <td>{{ funcionario.get_cargo_display }}</td>
+                        <td>
+                            <a class="funcionario-acao-tabela" href="{% url 'editar_funcionario' funcionario.id %}">Editar</a>
+                            <a class="funcionario-acao-tabela funcionario-acao-desativar" href="{% url 'desativar_funcionario' funcionario.id %}">Desativar</a>
+                        </td>
+                    </tr>
+                    
+
+                {% empty %}
+
+                    <tr>
+                        <td colspan="3">Nenhum funcionário encontrado.</td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+    </section>
+
+{% endblock %}
