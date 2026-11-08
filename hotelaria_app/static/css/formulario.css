@@ -343,6 +343,14 @@ label{
 	white-space: nowrap;
 }
 
+.formulario-acao-tabela {
+	background: transparent;
+	border: 0;
+	display: inline-block;
+	margin: 0;
+	padding: 0;
+}
+
 .funcionario-ordenacao,
 .funcionario-acao-tabela {
 	border-radius: 4px;

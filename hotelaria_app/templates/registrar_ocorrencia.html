@@ -1,0 +1,52 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}" />
+{% endblock %}
+
+{% block titulo_pagina %}
+
+<button class="botao-retornar funcionario-botao-retornar" type="button" onclick="history.back()">Voltar</button>
+<h1 class="funcionario-titulo-pagina">REGISTRAR OCORRÊNCIA</h1>
+
+{% endblock %}
+
+{% block main %}
+
+<section class="funcionario-pagina funcionario-pagina-formulario">
+<form class="funcionario-formulario" method="POST">
+
+    {% csrf_token %}
+
+    <label class="funcionario-label" for="ocorrencia-reserva">Quarto / reserva:</label>
+    <select class="funcionario-campo" id="ocorrencia-reserva" name="reserva_id" required>
+        <option value="">Selecione o quarto</option>
+        {% for reserva in reservas %}
+            <option value="{{ reserva.id }}">
+                Quarto {{ reserva.quarto.numero }}
+            </option>
+        {% empty %}
+            <option value="" disabled>Nenhuma reserva ativa disponível</option>
+        {% endfor %}
+    </select>
+
+    <label class="funcionario-label" for="ocorrencia-descricao">Descrição:</label>
+    <textarea class="funcionario-campo" id="ocorrencia-descricao" name="descricao" rows="5" required></textarea>
+
+    <div class="funcionario-formulario-acoes">
+
+        <a class="funcionario-botao funcionario-botao-secundario botao-cancelar" href="{% url 'listar_reservas' %}">
+            CANCELAR
+        </a>
+
+        <button class="funcionario-botao funcionario-botao-primario" type="submit">
+            CADASTRAR
+        </button>
+
+    </div>
+
+</form>
+</section>
+
+{% endblock %}

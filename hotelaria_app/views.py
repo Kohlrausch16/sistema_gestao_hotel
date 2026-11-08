@@ -15,6 +15,7 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import Funcionario
 from django.db.models.functions import Lower
 from .forms import FuncionarioForm
+from .models import Ocorrencia
 
 
 def index(request):
@@ -324,3 +325,104 @@ def ativar_funcionario(request, id):
     reserva.save(update_fields=['status'])
     messages.success(request, "Reserva cancelada com sucesso!")
     return redirect('listar_reservas')
+
+def registrar_ocorrencia(request):
+    if request.method == 'POST':
+        reserva_id = request.POST.get('reserva_id')
+        descricao = request.POST.get('descricao')
+
+        reserva = get_object_or_404(Reserva, id=reserva_id)
+
+        if reserva.status != 'A':
+            messages.error(request, "Não é possível registrar ocorrências para reservas que não estão ativas.")
+            return redirect('listar_reservas')
+
+        Ocorrencia.objects.create(
+            reserva=reserva,
+            descricao=descricao
+        )
+
+        messages.success(request, "Ocorrência registrada com sucesso!")
+        return redirect('listar_reservas')
+
+    reservas_ativas = Reserva.objects.filter(status='A')
+    dados = {
+        'reservas': reservas_ativas
+    }
+    return render(request, 'registrar_ocorrencia.html', dados)
+
+def listar_ocorrencia(request):
+    ordem = request.GET.get('ordem')
+    pesquisar_quarto = request.GET.get('pesquisar_quarto', '')
+
+    ocorrencias = Ocorrencia.objects.filter(
+        concluida=False,
+        reserva__quarto__numero__icontains=pesquisar_quarto
+    ).order_by('data_ocorrencia')
+
+    if ordem == 'decrescente':
+        ocorrencias = Ocorrencia.objects.filter(
+            concluida=False,
+            reserva__quarto__numero__icontains=pesquisar_quarto
+        ).order_by('-data_ocorrencia')
+
+    dados = {
+        'ocorrencias': ocorrencias,
+        'pesquisar_quarto': pesquisar_quarto,
+    }
+    return render(request, 'listar_ocorrencia.html', dados)
+
+@require_POST
+def concluir_ocorrencia(request, ocorrencia_id):
+    ocorrencia = get_object_or_404(Ocorrencia, id=ocorrencia_id)
+    ocorrencia.concluida = True
+    ocorrencia.save(update_fields=['concluida'])
+    messages.success(request, "Ocorrência marcada como concluída.")
+    return redirect('listar_ocorrencia')
+
+def ocorrencias_concluidas(request):
+    ordem = request.GET.get('ordem')
+    pesquisar_quarto = request.GET.get('pesquisar_quarto', '')
+
+    ocorrencias_concluidas = Ocorrencia.objects.filter(
+        concluida=True,
+        reserva__quarto__numero__icontains=pesquisar_quarto,
+    ).order_by('data_ocorrencia')
+
+    if ordem == 'decrescente':
+        ocorrencias_concluidas = Ocorrencia.objects.filter(
+            concluida=True,
+            reserva__quarto__numero__icontains=pesquisar_quarto,
+        ).order_by('-data_ocorrencia')
+
+    dados = {
+        'ocorrencias_concluidas': ocorrencias_concluidas,
+        'pesquisar_quarto': pesquisar_quarto,
+    }
+    return render(request, 'ocorrencias_concluidas.html', dados)
+
+def reabrir_ocorrencia(request, ocorrencia_id):
+    ocorrencia = get_object_or_404(Ocorrencia, id=ocorrencia_id)
+    ocorrencia.concluida = False
+    ocorrencia.save(update_fields=['concluida'])
+    messages.success(request, "Ocorrência reaberta com sucesso.")
+    return redirect('listar_ocorrencia')
+
+def visualizar_ocorrencia(request, ocorrencia_id):
+    ocorrencia = get_object_or_404(Ocorrencia, id=ocorrencia_id)
+    if request.method == 'POST':
+            descricao = request.POST.get('descricao', '').strip()
+            if not descricao:
+                messages.error(request, "A descrição da ocorrência não pode ficar vazia.")
+            else:
+                ocorrencia.descricao = descricao
+                ocorrencia.save(update_fields=['descricao'])
+                messages.success(request, "Ocorrência atualizada com sucesso.")
+                if ocorrencia.concluida:
+                    return redirect('ocorrencias_concluidas')
+                return redirect('listar_ocorrencia')
+    
+    dados = {
+            'ocorrencia': ocorrencia
+    }
+    return render(request, 'visualizar_ocorrencia.html', dados)

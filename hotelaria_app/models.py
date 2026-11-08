@@ -74,3 +74,12 @@ class Reserva(models.Model):
 
     def __str__(self):
         return f"Reserva de {self.cliente} no quarto {self.quarto} de {self.data_entrada} a {self.data_saida}"
+    
+class Ocorrencia(models.Model):
+    reserva = models.ForeignKey(Reserva, on_delete=models.CASCADE)
+    descricao = models.TextField()
+    data_ocorrencia = models.DateTimeField(auto_now_add=True)
+    concluida = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Ocorrência para a reserva {self.reserva.id} em {self.data_ocorrencia}"

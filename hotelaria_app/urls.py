@@ -21,4 +21,9 @@ urlpatterns = [
     path('reservas/', views.listar_reservas, name='listar_reservas'),
     path('clientes/', views.listar_clientes, name='listagem_clientes'),
     path('clientes/cadastro/', views.cadastrar_cliente),
-]
+    path('ocorrencias/registrar_ocorrencia', views.registrar_ocorrencia, name='registrar_ocorrencia'),
+    path('ocorrencias/', views.listar_ocorrencia, name='listar_ocorrencia'),
+    path('ocorrencias/<int:ocorrencia_id>/concluir/', views.concluir_ocorrencia, name='concluir_ocorrencia'),
+    path('ocorrencias/concluidas/', views.ocorrencias_concluidas, name='ocorrencias_concluidas'),
+    path('ocorrencias/<int:ocorrencia_id>/reabrir/', views.reabrir_ocorrencia, name='reabrir_ocorrencia'),
+    path('ocorrencias/<int:ocorrencia_id>/', views.visualizar_ocorrencia, name='visualizar_ocorrencia'),]
