@@ -1,0 +1,41 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Editar ocorrência{% endblock %}
+
+{% block arquivos_css %}
+	<link rel="stylesheet" href="{% static 'css/formulario.css' %}" />
+{% endblock %}
+
+{% block titulo_pagina %}
+	<a class="botao-retornar funcionario-botao-retornar" href="{% if ocorrencia.concluida %}{% url 'ocorrencias_concluidas' %}{% else %}{% url 'listar_ocorrencia' %}{% endif %}">Voltar</a>
+	<h1 class="funcionario-titulo-pagina">EDITAR OCORRÊNCIA</h1>
+{% endblock %}
+
+{% block main %}
+	<section class="funcionario-pagina funcionario-pagina-formulario">
+		<form class="funcionario-formulario" method="post" action="{% url 'visualizar_ocorrencia' ocorrencia.id %}">
+			{% csrf_token %}
+
+			<div>
+				<label class="funcionario-label">Número do quarto:</label>
+				<p class="funcionario-campo">{{ ocorrencia.reserva.quarto.numero }}</p>
+			</div>
+
+			<div>
+				<label class="funcionario-label">Data da ocorrência:</label>
+				<p class="funcionario-campo">{{ ocorrencia.data_ocorrencia|date:"d/m/Y H:i" }}</p>
+			</div>
+
+			<div>
+				<label class="funcionario-label" for="ocorrencia-descricao">Descrição:</label>
+				<textarea class="funcionario-campo" id="ocorrencia-descricao" name="descricao" rows="8" required>{{ ocorrencia.descricao }}</textarea>
+			</div>
+
+			<div class="funcionario-formulario-acoes">
+				<a class="funcionario-botao funcionario-botao-secundario" href="{% if ocorrencia.concluida %}{% url 'ocorrencias_concluidas' %}{% else %}{% url 'listar_ocorrencia' %}{% endif %}">CANCELAR</a>
+				<button class="funcionario-botao funcionario-botao-primario" type="submit">SALVAR ALTERAÇÕES</button>
+			</div>
+		</form>
+	</section>
+{% endblock %}

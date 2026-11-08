@@ -1,0 +1,61 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}" />
+{% endblock %}
+
+{% block title %}Ocorrências Concluídas{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar funcionario-botao-retornar" type="button" onclick="history.back()">Voltar</button>
+    <h1 class="funcionario-titulo-pagina">OCORRÊNCIAS CONCLUÍDAS</h1>
+{% endblock %}
+
+{% block main %}
+    <section class="funcionario-pagina funcionario-pagina-lista">
+    <div class="funcionario-tabela-container">
+        <table class="funcionario-tabela">
+            <thead>
+                <tr>
+                    <th>Quarto</th>
+                    <th>Descrição</th>
+                    <th>
+                        Data da ocorrência
+                        <a class="funcionario-ordenacao" aria-label="Mais antigas primeiro" href="?ordem=crescente;pesquisar_quarto={{ pesquisar_quarto }}">↑</a>
+                        <a class="funcionario-ordenacao" aria-label="Mais recentes primeiro" href="?ordem=decrescente;pesquisar_quarto={{ pesquisar_quarto }}">↓</a>
+                    </th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                {% for ocorrencia in ocorrencias_concluidas %}
+
+                    <tr>
+                        <td>{{ ocorrencia.reserva.quarto.numero }}</td>
+                        <td>{{ ocorrencia.descricao }}</td>
+                        <td>{{ ocorrencia.data_ocorrencia|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <a class="funcionario-botao funcionario-botao-secundario funcionario-acao-ativar" href="{% url 'reabrir_ocorrencia' ocorrencia.id %}">
+                                Reabrir ocorrência
+                            </a>
+                            <a class="funcionario-botao funcionario-botao-secundario" href="{% url 'visualizar_ocorrencia' ocorrencia.id %}">
+                                Visualizar
+                            </a>
+                        </td>
+                    </tr>
+                    
+
+                {% empty %}
+
+                    <tr>
+                        <td colspan="4">Nenhuma ocorrência encontrada.</td>
+                    </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </section>
+{% endblock %}

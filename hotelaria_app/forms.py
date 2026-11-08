@@ -2,7 +2,7 @@ from django import forms
 from datetime import date
 
 from .disponibilidade import quartos_disponiveis
-from .models import Cliente, Quarto, Reserva, Funcionario
+from .models import Cliente, Quarto, Reserva, Funcionario, Ocorrencia
 
 class ClienteForm(forms.ModelForm):
 
@@ -244,4 +244,22 @@ class ReservaForm(forms.ModelForm):
                 "placeholder": "05/01/2024"
             },
             format="%Y-%m-%d"),
+        }
+
+class OcorrenciaForm(forms.ModelForm):
+    class Meta:
+        model = Ocorrencia
+        fields = ['reserva', 'descricao']
+        labels = {
+            'reserva': 'RESERVA',
+            'descricao': 'DESCRIÇÃO'
+        }
+        widgets = {
+            'reserva': forms.Select(attrs={
+                "class": "campo-formulario placeholder-input input-reserva"
+            }),
+            'descricao': forms.Textarea(attrs={
+                "class": "campo-formulario placeholder-input input-descricao",
+                "placeholder": "Descreva a ocorrência aqui..."
+            }),
         }
