@@ -259,8 +259,26 @@ label{
     width: 100%;
 }
 
-.formulario-tipo-quarto > .campo-tipo-quarto {
+.formulario-tipo-quarto {
+    display: flex;
+    flex-direction: column;
+}
+
+.campos-tipo-quarto {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+    width: 100%;
+}
+
+.campos-tipo-quarto > .campo-tipo-quarto {
     min-width: 0;
+}
+
+.formulario-tipo-quarto > .container-botoes {
+    align-self: stretch;
+    box-sizing: border-box;
+    margin-top: 0;
 }
 
 .campo-tarifas-sazonais {
@@ -329,6 +347,10 @@ label{
 }
 
 @media (max-width: 800px) {
+    .campos-tipo-quarto {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
     .opcoes-tarifas-sazonais {
         grid-template-columns: minmax(0, 1fr);
     }

@@ -4,7 +4,7 @@
 {% block title %}Cadastrar tipo de quarto{% endblock %}
 
 {% block arquivos_css %}
-    <link rel="stylesheet" href="{% static 'css/formulario.css' %}">
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}?v=6">
 {% endblock %}
 
 {% block titulo_pagina %}
@@ -16,6 +16,7 @@
     <form class="formulario-quarto formulario-tipo-quarto" action="{% url 'criar_tipo_quarto' %}" method="post">
         {% csrf_token %}
 
+        <div class="campos-tipo-quarto">
         {% for campo in formulario %}
             {% if campo.name == 'TarifaSazonal' %}
                 <fieldset class="campo-tarifas-sazonais">
@@ -38,6 +39,7 @@
                 </div>
             {% endif %}
         {% endfor %}
+        </div>
 
         <div class="container-botoes">
             <a class="botao-formulario botao-cancelar" href="{% url 'listar_tipos_quarto' %}">CANCELAR</a>
