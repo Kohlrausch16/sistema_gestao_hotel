@@ -1,0 +1,68 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Tarifas sazonais{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}">
+{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
+    <div class="cabecalho-quartos">
+        <div>
+            <h1 class="titulo-pagina">TARIFAS SAZONAIS</h1>
+            <p class="subtitulo-quartos">Consulte os valores e períodos cadastrados no hotel.</p>
+        </div>
+        <a class="botao-novo-quarto" href="{% url 'criar_tarifa_sazonal' %}">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Cadastrar tarifa
+        </a>
+    </div>
+{% endblock %}
+
+{% block main %}
+    <section class="painel-quartos" aria-label="Lista de tarifas sazonais">
+        <div class="painel-cabecalho">
+            <h2>Tarifas cadastradas</h2>
+            <span class="contador-quartos">{{ tarifas_sazonais|length }} tarifa{{ tarifas_sazonais|length|pluralize }}</span>
+        </div>
+
+        {% if tarifas_sazonais %}
+            <div class="tabela-rolagem">
+                <table class="tabela-quartos">
+                    <thead>
+                        <tr>
+                            <th scope="col">Descrição</th>
+                            <th scope="col">Valor</th>
+                            <th scope="col">Início</th>
+                            <th scope="col">Fim</th>
+                            <th scope="col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tarifa_sazonal in tarifas_sazonais %}
+                            <tr>
+                                <td class="numero-quarto">{{ tarifa_sazonal.descricao }}</td>
+                                <td>R$ {{ tarifa_sazonal.valor|floatformat:2 }}</td>
+                                <td>{{ tarifa_sazonal.data_inicio|date:"d/m/Y" }}</td>
+                                <td>{{ tarifa_sazonal.data_fim|date:"d/m/Y" }}</td>
+                                <td>
+                                    <a href="{% url 'editar_tarifa_sazonal' tarifa_sazonal.id %}" class="botao-editar" aria-label="Editar tarifa {{ tarifa_sazonal.descricao }}" title="Editar tarifa">
+                                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="lista-vazia">
+                <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+                <h3>Nenhuma tarifa sazonal cadastrada</h3>
+                <p>Cadastre a primeira tarifa para vê-la nesta lista.</p>
+                <a href="{% url 'criar_tarifa_sazonal' %}">Cadastrar tarifa</a>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

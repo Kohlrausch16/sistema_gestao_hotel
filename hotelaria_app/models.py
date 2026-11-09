@@ -2,11 +2,7 @@ from django.db import models
 from .fields import BaseModel
 
 from django.contrib.auth.models import User
-TIPO_QUARTO_CHOICES = [
-    ('S', 'Simples'),
-    ('D', 'Duplo'),
-    ('U', 'Suíte'),
-]
+
 
 STATUS_QUARTO_CHOICES = [
     ('D', 'Disponível'),
@@ -53,16 +49,34 @@ class Funcionario(models.Model):
 
     def __str__(self):
         return self.nome
+
+class TipoQuarto(models.Model):
+    tipo = models.CharField(max_length=20)
+    preco_diaria = models.DecimalField(max_digits=10, decimal_places=2)
+    TarifaSazonal = models.ManyToManyField('TarifaSazonal', blank=True)
+
+    def __str__(self):
+        return self.tipo
+
+class TarifaSazonal(models.Model):
+    descricao = models.CharField(max_length=100)
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    data_inicio = models.DateField()
+    data_fim = models.DateField()
+
+    def __str__(self):
+        return self.descricao
+
 class Quarto(models.Model):
     numero = models.CharField(max_length=10)
-    tipo = models.CharField(max_length=1, choices=TIPO_QUARTO_CHOICES)
+    tipo = models.ForeignKey(TipoQuarto, on_delete=models.PROTECT)
     capacidade = models.IntegerField(default=1)
     preco_diaria = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=1, default='D', choices=STATUS_QUARTO_CHOICES)
     ativo = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.numero + " - " + self.tipo
+        return f"{self.numero} - {self.tipo}"
 
 class Reserva(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)

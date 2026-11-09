@@ -1,0 +1,25 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Cadastrar tarifa sazonal{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}">
+{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
+    <h1 class="titulo-pagina">CADASTRAR TARIFA SAZONAL</h1>
+{% endblock %}
+
+{% block main %}
+    <form class="formulario-quarto" action="{% url 'criar_tarifa_sazonal' %}" method="post">
+        {% csrf_token %}
+        {{ formulario.as_p }}
+
+        <div class="container-botoes">
+            <a class="botao-formulario botao-cancelar" href="{% url 'listar_tarifas_sazonais' %}">CANCELAR</a>
+            <button class="botao-formulario botao-confirmar" type="submit">CADASTRAR</button>
+        </div>
+    </form>
+{% endblock %}

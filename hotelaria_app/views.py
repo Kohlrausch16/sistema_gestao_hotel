@@ -6,9 +6,9 @@ from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
-from .models import Cliente, Quarto, Reserva
+from .models import Cliente, Quarto, Reserva, TarifaSazonal, TipoQuarto
 from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis
-from .forms import ClienteForm, ReservaForm
+from .forms import ClienteForm, ReservaForm, TarifaSazonalForm, TipoQuartoForm
 from .forms import QuartoForm
 from .forms import EditarQuartoForm
 from django.contrib.auth.forms import UserCreationForm
@@ -64,7 +64,7 @@ def cadastrar_quarto(request):
 
 def listar_quartos(request):
     pesquisa = request.GET.get("q", "").strip()
-    quartos = Quarto.objects.all()
+    quartos = Quarto.objects.select_related('tipo')
     quartos = quartos.filter(ativo=True)
     if pesquisa:
         quartos = quartos.filter(numero__icontains=pesquisa)
@@ -145,7 +145,7 @@ def quartos_disponiveis(request):
     quartos = buscar_quartos_disponiveis(entrada, saida, excluir_reserva_id=reserva_id)
     return JsonResponse({
         "quartos": [
-            {"id": quarto.id, "numero": quarto.numero, "tipo": quarto.get_tipo_display()}
+            {"id": quarto.id, "numero": quarto.numero, "tipo": str(quarto.tipo)}
             for quarto in quartos
         ]
     })
@@ -194,6 +194,11 @@ def cancelar_reserva(request, reserva_id):
     if reserva.data_entrada <= timezone.localdate():
         messages.error(request, "A reserva só pode ser cancelada antes do check-in.")
         return redirect('listar_reservas')
+
+    reserva.status = 'C'
+    reserva.save(update_fields=['status'])
+    messages.success(request, "Reserva cancelada com sucesso!")
+    return redirect('listar_reservas')
 
 def cadastrar_funcionario(request):
 
@@ -332,10 +337,6 @@ def ativar_funcionario(request, id):
     messages.success(request, mensagem)
 
     return redirect('listar_funcionarios')
-    reserva.status = 'C'
-    reserva.save(update_fields=['status'])
-    messages.success(request, "Reserva cancelada com sucesso!")
-    return redirect('listar_reservas')
 
 def registrar_ocorrencia(request):
     if request.method == 'POST':
@@ -437,3 +438,62 @@ def visualizar_ocorrencia(request, ocorrencia_id):
             'ocorrencia': ocorrencia
     }
     return render(request, 'visualizar_ocorrencia.html', dados)
+
+def criar_tipo_quarto(request):
+    formulario = TipoQuartoForm(request.POST or None)
+    if request.method == 'POST' and formulario.is_valid():
+        formulario.save()
+        messages.success(request, "Tipo de quarto criado com sucesso!")
+        return redirect('listar_tipos_quarto')
+
+    return render(request, 'criar_tipo_quarto.html', {'formulario': formulario})
+
+def listar_tipos_quarto(request):
+    tipos_quarto = TipoQuarto.objects.prefetch_related('TarifaSazonal').order_by('tipo')
+    dados = {
+        'tipos_quarto': tipos_quarto
+    }
+    return render(request, 'listar_tipos_quarto.html', dados)
+
+def editar_tipo_quarto(request, tipo_id):
+    tipo_quarto = get_object_or_404(TipoQuarto, id=tipo_id)
+    formulario = TipoQuartoForm(request.POST or None, instance=tipo_quarto)
+
+    if request.method == 'POST' and formulario.is_valid():
+        formulario.save()
+        messages.success(request, "Tipo de quarto atualizado com sucesso!")
+        return redirect('listar_tipos_quarto')
+
+    dados = {
+        'tipo_quarto': tipo_quarto,
+        'formulario': formulario
+    }
+    return render(request, 'editar_tipo_quarto.html', dados)
+
+def criar_tarifa_sazonal(request):
+    formulario = TarifaSazonalForm(request.POST or None)
+    if request.method == 'POST' and formulario.is_valid():
+        formulario.save()
+        messages.success(request, "Tarifa sazonal criada com sucesso!")
+        return redirect('listar_tarifas_sazonais')
+
+    return render(request, 'criar_tarifa_sazonal.html', {'formulario': formulario})
+
+def listar_tarifas_sazonais(request):
+    tarifas_sazonais = TarifaSazonal.objects.all().order_by('data_inicio', 'descricao')
+    return render(request, 'listar_tarifas_sazonais.html', {
+        'tarifas_sazonais': tarifas_sazonais,
+    })
+
+def editar_tarifa_sazonal(request, tarifa_id):
+    tarifa_sazonal = get_object_or_404(TarifaSazonal, id=tarifa_id)
+    formulario = TarifaSazonalForm(request.POST or None, instance=tarifa_sazonal)
+    if request.method == 'POST' and formulario.is_valid():
+        formulario.save()
+        messages.success(request, "Tarifa sazonal atualizada com sucesso!")
+        return redirect('listar_tarifas_sazonais')
+
+    return render(request, 'editar_tarifa_sazonal.html', {
+        'tarifa_sazonal': tarifa_sazonal,
+        'formulario': formulario,
+    })

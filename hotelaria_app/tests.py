@@ -4,12 +4,13 @@ from unittest.mock import patch
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Cliente, Quarto, Reserva
+from .models import Cliente, Quarto, Reserva, TipoQuarto, TarifaSazonal
 
 
 class DisponibilidadeQuartosTests(TestCase):
     @classmethod
     def setUpTestData(cls):
+        cls.tipo_simples = TipoQuarto.objects.create(tipo="Simples", preco_diaria="100.00")
         cls.cliente = Cliente.objects.create(
             nome="Ana",
             sobrenome="Silva",
@@ -19,13 +20,13 @@ class DisponibilidadeQuartosTests(TestCase):
             telefone="11999999999",
         )
         cls.ocupado = Quarto.objects.create(
-            numero="101", tipo="S", capacidade=1, preco_diaria="100.00"
+            numero="101", tipo=cls.tipo_simples, capacidade=1, preco_diaria="100.00"
         )
         cls.livre = Quarto.objects.create(
-            numero="102", tipo="S", capacidade=1, preco_diaria="100.00"
+            numero="102", tipo=cls.tipo_simples, capacidade=1, preco_diaria="100.00"
         )
         cls.manutencao = Quarto.objects.create(
-            numero="103", tipo="S", capacidade=1, preco_diaria="100.00", status="M"
+            numero="103", tipo=cls.tipo_simples, capacidade=1, preco_diaria="100.00", status="M"
         )
         Reserva.objects.create(
             cliente=cls.cliente,
@@ -44,6 +45,14 @@ class DisponibilidadeQuartosTests(TestCase):
             [quarto["id"] for quarto in resposta.json()["quartos"]],
             [self.livre.id],
         )
+        self.assertEqual(resposta.json()["quartos"][0]["tipo"], "Simples")
+
+    def test_listagem_e_cadastro_exibem_tipo_relacionado(self):
+        listagem = self.client.get(reverse("listar_quartos"))
+        cadastro = self.client.get(reverse("cadastrar_quarto"))
+
+        self.assertContains(listagem, "Simples")
+        self.assertContains(cadastro, "Simples")
 
     def test_saida_e_entrada_no_mesmo_dia_nao_conflitam(self):
         resposta = self.client.get(reverse("quartos_disponiveis"), {
@@ -263,3 +272,30 @@ class IntegracaoClientesTests(TestCase):
         resposta = self.client.post(reverse("cadastrar_cliente"), {})
         self.assertEqual(resposta.status_code, 200)
         self.assertEqual(Cliente.objects.count(), 0)
+
+
+class TarifasSazonaisTests(TestCase):
+    def test_tipo_de_quarto_usa_tarifa_sazonal_sem_tarifa_adicional(self):
+        tarifa = TarifaSazonal.objects.create(
+            descricao="Alta temporada",
+            valor="180.00",
+            data_inicio=date(2026, 12, 1),
+            data_fim=date(2027, 1, 31),
+        )
+
+        cadastro = self.client.get(reverse("criar_tipo_quarto"))
+        self.assertContains(cadastro, 'type="checkbox"')
+        self.assertContains(cadastro, "Alta temporada")
+
+        resposta = self.client.post(reverse("criar_tipo_quarto"), {
+            "tipo": "Duplo especial",
+            "preco_diaria": "150.00",
+            "TarifaSazonal": [tarifa.id],
+        })
+
+        self.assertRedirects(resposta, reverse("listar_tipos_quarto"))
+        tipo = TipoQuarto.objects.get(tipo="Duplo especial")
+        self.assertEqual(list(tipo.TarifaSazonal.all()), [tarifa])
+        listagem = self.client.get(reverse("listar_tipos_quarto"))
+        self.assertContains(listagem, "Alta temporada")
+        self.assertNotContains(listagem, "Tarifa adicional")

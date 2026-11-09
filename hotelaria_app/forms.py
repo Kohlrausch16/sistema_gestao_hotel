@@ -2,7 +2,7 @@ from django import forms
 from datetime import date
 
 from .disponibilidade import quartos_disponiveis
-from .models import Cliente, Quarto, Reserva, Funcionario, Ocorrencia
+from .models import Cliente, Quarto, Reserva, Funcionario, Ocorrencia, TarifaSazonal, TipoQuarto
 
 class ClienteForm(forms.ModelForm):
 
@@ -262,4 +262,72 @@ class OcorrenciaForm(forms.ModelForm):
                 "class": "campo-formulario placeholder-input input-descricao",
                 "placeholder": "Descreva a ocorrência aqui..."
             }),
+        }
+
+class TipoQuartoForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['TarifaSazonal'].label_from_instance = (
+            lambda tarifa: (
+                f"{tarifa.descricao} · "
+                f"{tarifa.data_inicio:%d/%m/%Y} a {tarifa.data_fim:%d/%m/%Y} · "
+                f"R$ {tarifa.valor:.2f}"
+            )
+        )
+
+    class Meta:
+        model = TipoQuarto
+        fields = ['tipo', 'preco_diaria', 'TarifaSazonal']
+        labels = {
+            'tipo': 'TIPO',
+            'preco_diaria': 'PREÇO DIÁRIO',
+            'TarifaSazonal': 'TARIFAS SAZONAIS'
+        }
+        widgets = {
+            'tipo': forms.TextInput(attrs={
+                "class": "campo-formulario placeholder-input input-tipo",
+                "placeholder": "Tipo do quarto"
+            }),
+            'preco_diaria': forms.NumberInput(attrs={
+                "class": "campo-formulario placeholder-input input-preco-diaria",
+                "placeholder": "100.00",
+                "min": "0",
+                "step": "0.01"
+            }),
+            'TarifaSazonal': forms.CheckboxSelectMultiple(),
+        }
+
+class TarifaSazonalForm(forms.ModelForm):
+    class Meta:
+        model = TarifaSazonal
+        fields = ['descricao', 'valor', 'data_inicio', 'data_fim']
+        labels = {
+            'descricao': 'DESCRIÇÃO',
+            'valor': 'VALOR',
+            'data_inicio': 'DATA DE INÍCIO',
+            'data_fim': 'DATA DE FIM'
+        }
+        widgets = {
+            'descricao': forms.TextInput(attrs={
+                "class": "campo-formulario placeholder-input input-descricao",
+                "placeholder": "Descrição da tarifa sazonal"
+            }),
+            'valor': forms.NumberInput(attrs={
+                "class": "campo-formulario placeholder-input input-valor",
+                "placeholder": "100.00",
+                "min": "0",
+                "step": "0.01"
+            }),
+            'data_inicio': forms.DateInput(attrs={
+                "type": "date",
+                "class": "campo-formulario placeholder-input input-data-inicio",
+                "placeholder": "01/01/2024"
+            },
+            format="%Y-%m-%d"),
+            'data_fim': forms.DateInput(attrs={
+                "type": "date",
+                "class": "campo-formulario placeholder-input input-data-fim",
+                "placeholder": "05/01/2024"
+            },
+            format="%Y-%m-%d"),
         }
