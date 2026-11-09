@@ -346,7 +346,7 @@ def registrar_ocorrencia(request):
 
         if reserva.status != 'A':
             messages.error(request, "Não é possível registrar ocorrências para reservas que não estão ativas.")
-            return redirect('listar_reservas')
+            return redirect('listar_ocorrencia')
 
         Ocorrencia.objects.create(
             reserva=reserva,
@@ -354,7 +354,7 @@ def registrar_ocorrencia(request):
         )
 
         messages.success(request, "Ocorrência registrada com sucesso!")
-        return redirect('listar_reservas')
+        return redirect('listar_ocorrencia')
 
     reservas_ativas = Reserva.objects.filter(status='A')
     dados = {
