@@ -1,6 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from datetime import date
+from datetime import datetime
 
 from .disponibilidade import quartos_disponiveis
 from .precificacao import calcular_preco_total
@@ -169,6 +169,8 @@ class EditarQuartoForm(QuartoForm):
 class ReservaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        for nome in ("data_entrada", "data_saida"):
+            self.fields[nome].input_formats = ["%d/%m/%Y", "%Y-%m-%d"]
         self.fields["cliente"].label_from_instance = (
             lambda cliente: f"{cliente} — CPF: {cliente.cpf}"
         )
@@ -179,8 +181,8 @@ class ReservaForm(forms.ModelForm):
 
         if self.is_bound:
             try:
-                entrada = date.fromisoformat(self.data.get("data_entrada", ""))
-                saida = date.fromisoformat(self.data.get("data_saida", ""))
+                entrada = self._ler_data(self.data.get("data_entrada", ""))
+                saida = self._ler_data(self.data.get("data_saida", ""))
             except (TypeError, ValueError):
                 return
         elif self.instance.pk:
@@ -193,6 +195,15 @@ class ReservaForm(forms.ModelForm):
             self.fields["quarto"].queryset = quartos_disponiveis(
                 entrada, saida, excluir_reserva_id=self.instance.pk
             )
+
+    @staticmethod
+    def _ler_data(valor):
+        for formato in ("%d/%m/%Y", "%Y-%m-%d"):
+            try:
+                return datetime.strptime(valor, formato).date()
+            except (TypeError, ValueError):
+                continue
+        raise ValueError("Data inválida")
 
     def clean(self):
         dados = super().clean()
@@ -243,18 +254,22 @@ class ReservaForm(forms.ModelForm):
             }),
 
             "data_entrada": forms.DateInput(attrs={
-                "type": "date",
+                "type": "text",
                 "class": "campo-formulario placeholder-input input-data-entrada",
-                "placeholder": "01/01/2024"
+                "placeholder": "dd/mm/aaaa",
+                "inputmode": "numeric",
+                "maxlength": "10"
             },
-            format="%Y-%m-%d"),
+            format="%d/%m/%Y"),
 
             "data_saida": forms.DateInput(attrs={
-                "type": "date",
+                "type": "text",
                 "class": "campo-formulario placeholder-input input-data-saida",
-                "placeholder": "05/01/2024"
+                "placeholder": "dd/mm/aaaa",
+                "inputmode": "numeric",
+                "maxlength": "10"
             },
-            format="%Y-%m-%d"),
+            format="%d/%m/%Y"),
         }
 
 class OcorrenciaForm(forms.ModelForm):

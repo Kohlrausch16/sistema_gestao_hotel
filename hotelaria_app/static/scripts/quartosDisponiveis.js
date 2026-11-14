@@ -8,16 +8,19 @@ const reservaId = document.querySelector("[data-reserva-id]")?.dataset.reservaId
 if (entrada && saida && quarto && mensagem && url) {
     let consultaAtual;
     let quartosDisponiveis = [];
+    let quartoSelecionado = quarto.value;
     const moeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
-    function atualizarDataMinimaSaida() {
-        if (!entrada.value) {
-            saida.removeAttribute("min");
-            return;
+    function dataIso(valor) {
+        const partes = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(valor.trim());
+        if (!partes) return null;
+        const [, dia, mes, ano] = partes;
+        const data = new Date(`${ano}-${mes}-${dia}T00:00:00Z`);
+        if (Number.isNaN(data.getTime()) || data.getUTCFullYear() !== Number(ano)
+            || data.getUTCMonth() + 1 !== Number(mes) || data.getUTCDate() !== Number(dia)) {
+            return null;
         }
-        const proximoDia = new Date(`${entrada.value}T00:00:00Z`);
-        proximoDia.setUTCDate(proximoDia.getUTCDate() + 1);
-        saida.min = proximoDia.toISOString().slice(0, 10);
+        return `${ano}-${mes}-${dia}`;
     }
 
     function mostrarPrecoSelecionado() {
@@ -28,20 +31,20 @@ if (entrada && saida && quarto && mensagem && url) {
     }
 
     async function atualizarQuartos() {
-        atualizarDataMinimaSaida();
-        const selecaoAnterior = quarto.value || quarto.dataset.selecaoInicial || "";
-        delete quarto.dataset.selecaoInicial;
+        const entradaIso = dataIso(entrada.value);
+        const saidaIso = dataIso(saida.value);
+        const selecaoAnterior = quarto.value || quartoSelecionado;
         consultaAtual?.abort();
         quarto.replaceChildren(new Option("Selecione as datas primeiro", ""));
         quarto.disabled = true;
         quartosDisponiveis = [];
 
-        if (!entrada.value || !saida.value) {
-            mensagem.textContent = "Informe a entrada e a saída para ver os quartos disponíveis.";
+        if (!entradaIso || !saidaIso) {
+            mensagem.textContent = "Informe a entrada e a saída no formato dd/mm/aaaa para ver os quartos disponíveis.";
             return;
         }
 
-        if (saida.value <= entrada.value) {
+        if (saidaIso <= entradaIso) {
             mensagem.textContent = "A saída deve ser posterior à entrada.";
             return;
         }
@@ -52,8 +55,8 @@ if (entrada && saida && quarto && mensagem && url) {
 
         try {
             const parametros = new URLSearchParams({
-                entrada: entrada.value,
-                saida: saida.value,
+                entrada: entradaIso,
+                saida: saidaIso,
             });
             if (reservaId) parametros.set("reserva_id", reservaId);
             const resposta = await fetch(`${url}?${parametros}`, { signal: controller.signal });
@@ -70,6 +73,9 @@ if (entrada && saida && quarto && mensagem && url) {
             }
             if (dados.quartos.some((disponivel) => String(disponivel.id) === selecaoAnterior)) {
                 quarto.value = selecaoAnterior;
+                quartoSelecionado = selecaoAnterior;
+            } else {
+                quartoSelecionado = "";
             }
             quarto.disabled = dados.quartos.length === 0;
             if (dados.quartos.length) {
@@ -84,9 +90,11 @@ if (entrada && saida && quarto && mensagem && url) {
         }
     }
 
-    quarto.dataset.selecaoInicial = quarto.value;
-    entrada.addEventListener("change", atualizarQuartos);
-    saida.addEventListener("change", atualizarQuartos);
-    quarto.addEventListener("change", mostrarPrecoSelecionado);
+    entrada.addEventListener("input", atualizarQuartos);
+    saida.addEventListener("input", atualizarQuartos);
+    quarto.addEventListener("change", () => {
+        quartoSelecionado = quarto.value;
+        mostrarPrecoSelecionado();
+    });
     atualizarQuartos();
 }
