@@ -13,6 +13,9 @@
 {% endblock %}
 
 {% block main %}
+    {% if ocupado_hoje %}
+        <p role="status">Este quarto tem uma reserva ativa hoje e aparece como Ocupado na lista.</p>
+    {% endif %}
     <form class="formulario-quarto" action="{% url 'editar_quarto' quarto.id %}" method="post">
         {% csrf_token %}
         {{ formulario.as_p }}

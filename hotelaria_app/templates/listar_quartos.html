@@ -56,8 +56,8 @@
                                 <td>{{ quarto.tipo }}</td>
                                 <td>R$ {{ quarto.preco_diaria|floatformat:2 }}</td>
                                 <td>
-                                    <span class="status-quarto status-{{ quarto.status|lower }}">
-                                        {{ quarto.get_status_display }}
+                                    <span class="status-quarto status-{{ quarto.status_atual|lower }}">
+                                        {{ quarto.status_atual_display }}
                                     </span>
                                 </td>
                                 <td>
