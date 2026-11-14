@@ -1,6 +1,8 @@
 from datetime import date
 
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.http import JsonResponse
@@ -38,6 +40,11 @@ def listar_clientes(request):
 
 
 def cadastrar_cliente(request):
+    retorno = request.POST.get('next') or request.GET.get('next')
+    if not retorno or not url_has_allowed_host_and_scheme(
+        retorno, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        retorno = reverse('listagem_clientes')
     form = ClienteForm(request.POST or None)
 
     if request.method == "POST":
@@ -47,9 +54,12 @@ def cadastrar_cliente(request):
             mensagem_confirmacao = "Cliente cadastrado com sucesso!"
             messages.success(request, mensagem_confirmacao)
 
-            return redirect('listagem_clientes')
+            return redirect(retorno)
 
-    return render(request, "cadastrar_cliente.html", {'formulario': form})
+    return render(request, "cadastrar_cliente.html", {
+        'formulario': form,
+        'retorno_cliente': retorno,
+    })
 
 def cadastrar_quarto(request):
     form = QuartoForm(request.POST or None)

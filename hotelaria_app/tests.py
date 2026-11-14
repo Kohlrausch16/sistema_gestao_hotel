@@ -573,6 +573,35 @@ class IntegracaoClientesTests(TestCase):
         self.assertEqual(resposta.status_code, 200)
         self.assertEqual(Cliente.objects.count(), 0)
 
+    def test_cancelar_cadastro_cliente_volta_para_criacao_de_reserva(self):
+        reserva_url = reverse("criar_reserva")
+        cliente_url = reverse("cadastrar_cliente")
+        reserva = self.client.get(reserva_url)
+        self.assertContains(reserva, f'{cliente_url}?next={reserva_url}')
+
+        cadastro = self.client.get(cliente_url, {"next": reserva_url})
+        self.assertContains(cadastro, f'href="{reserva_url}">CANCELAR</a>')
+
+        invalido = self.client.post(cliente_url, {"next": reserva_url})
+        self.assertContains(invalido, f'href="{reserva_url}">CANCELAR</a>')
+
+    def test_cadastro_cliente_retorna_para_reserva_e_bloqueia_destino_externo(self):
+        cliente_url = reverse("cadastrar_cliente")
+        reserva_url = reverse("criar_reserva")
+        dados = {
+            "next": reserva_url,
+            "nome": "Ana", "sobrenome": "Silva", "cpf": "12345678901",
+            "data_nascimento": "1990-01-01", "email": "ana@example.com",
+            "telefone": "11999999999", "logradouro": "Rua Central",
+            "numero": "10", "bairro": "Centro", "cidade": "São Paulo",
+        }
+        resposta = self.client.post(cliente_url, dados)
+        self.assertRedirects(resposta, reserva_url)
+        self.assertEqual(Cliente.objects.count(), 1)
+
+        externo = self.client.get(cliente_url, {"next": "https://example.com/"})
+        self.assertContains(externo, f'href="{reverse("listagem_clientes")}">CANCELAR</a>')
+
 
 class TarifasSazonaisTests(TestCase):
     def test_tipo_com_quarto_cadastrado_nao_pode_ser_excluido(self):

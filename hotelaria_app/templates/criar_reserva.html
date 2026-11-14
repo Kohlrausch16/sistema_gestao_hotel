@@ -25,7 +25,7 @@
             <input class="campo-formulario pesquisa-cliente" type="search" id="pesquisa-cliente" placeholder="Pesquisar cliente por CPF" aria-label="Pesquisar cliente por CPF" inputmode="numeric">
             <div class="campo-cliente-acoes">
                 {{ formulario.cliente }}
-                <a class="botao-formulario botao-novo-cliente" href="{% url 'cadastrar_cliente' %}">Novo Cliente</a>
+                <a class="botao-formulario botao-novo-cliente" href="{% url 'cadastrar_cliente' %}?next={% url 'criar_reserva' %}">Novo Cliente</a>
             </div>
             {{ formulario.cliente.errors }}
         </div>

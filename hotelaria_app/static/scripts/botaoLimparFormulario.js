@@ -1,3 +1,5 @@
-document.querySelector(".botao-cancelar").addEventListener("click", () => {
-    window.location.reload();
+document.querySelectorAll("button.botao-cancelar").forEach((botao) => {
+    botao.addEventListener("click", () => {
+        window.location.reload();
+    });
 });
