@@ -115,6 +115,9 @@ class DisponibilidadeQuartosTests(TestCase):
         self.assertEqual(Reserva.objects.count(), 1)
 
     def test_reserva_rejeita_entrada_e_saida_no_mesmo_dia(self):
+        pagina = self.client.get(reverse("criar_reserva"))
+        self.assertContains(pagina, 'type="date"', count=2)
+
         resposta = self.client.post(reverse("criar_reserva"), {
             "cliente": self.cliente.id,
             "quarto": self.livre.id,
@@ -164,27 +167,6 @@ class DisponibilidadeQuartosTests(TestCase):
 
         self.assertRedirects(resposta, reverse("listar_reservas"))
         self.assertEqual(Reserva.objects.count(), 2)
-        self.assertEqual(Reserva.objects.get(quarto=self.livre).preco_total, Decimal("200.00"))
-
-    def test_reserva_mantem_data_parcial_e_aceita_dia_mes_ano(self):
-        pagina = self.client.get(reverse("criar_reserva"))
-        self.assertContains(pagina, 'name="data_entrada"')
-        self.assertContains(pagina, 'placeholder="dd/mm/aaaa"')
-
-        dados = {
-            "cliente": self.cliente.id,
-            "quarto": self.livre.id,
-            "data_entrada": "11/11/20",
-            "data_saida": "13/11/2026",
-        }
-        parcial = self.client.post(reverse("criar_reserva"), dados)
-        self.assertEqual(parcial.status_code, 200)
-        self.assertContains(parcial, 'value="11/11/20"')
-        self.assertEqual(Reserva.objects.count(), 1)
-
-        dados["data_entrada"] = "11/11/2026"
-        completa = self.client.post(reverse("criar_reserva"), dados)
-        self.assertRedirects(completa, reverse("listar_reservas"))
         self.assertEqual(Reserva.objects.get(quarto=self.livre).preco_total, Decimal("200.00"))
 
     def test_checkin_mantem_quarto_ocupado_e_indisponivel(self):
@@ -448,7 +430,7 @@ class DisponibilidadeQuartosTests(TestCase):
                 "data_saida": "2026-11-13",
             })
 
-        self.assertContains(pagina, 'value="10/11/2026"')
+        self.assertContains(pagina, 'value="2026-11-10"')
         self.assertContains(pagina, f'value="{self.ocupado.id}" selected')
         self.assertRedirects(resposta, reverse("listar_reservas"))
         reserva.refresh_from_db()

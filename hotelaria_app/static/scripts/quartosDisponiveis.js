@@ -11,18 +11,6 @@ if (entrada && saida && quarto && mensagem && url) {
     let quartoSelecionado = quarto.value;
     const moeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
-    function dataIso(valor) {
-        const partes = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(valor.trim());
-        if (!partes) return null;
-        const [, dia, mes, ano] = partes;
-        const data = new Date(`${ano}-${mes}-${dia}T00:00:00Z`);
-        if (Number.isNaN(data.getTime()) || data.getUTCFullYear() !== Number(ano)
-            || data.getUTCMonth() + 1 !== Number(mes) || data.getUTCDate() !== Number(dia)) {
-            return null;
-        }
-        return `${ano}-${mes}-${dia}`;
-    }
-
     function mostrarPrecoSelecionado() {
         const selecionado = quartosDisponiveis.find((item) => String(item.id) === quarto.value);
         mensagem.textContent = selecionado
@@ -31,20 +19,18 @@ if (entrada && saida && quarto && mensagem && url) {
     }
 
     async function atualizarQuartos() {
-        const entradaIso = dataIso(entrada.value);
-        const saidaIso = dataIso(saida.value);
         const selecaoAnterior = quarto.value || quartoSelecionado;
         consultaAtual?.abort();
         quarto.replaceChildren(new Option("Selecione as datas primeiro", ""));
         quarto.disabled = true;
         quartosDisponiveis = [];
 
-        if (!entradaIso || !saidaIso) {
-            mensagem.textContent = "Informe a entrada e a saída no formato dd/mm/aaaa para ver os quartos disponíveis.";
+        if (!entrada.value || !saida.value) {
+            mensagem.textContent = "Informe a entrada e a saída para ver os quartos disponíveis.";
             return;
         }
 
-        if (saidaIso <= entradaIso) {
+        if (saida.value <= entrada.value) {
             mensagem.textContent = "A saída deve ser posterior à entrada.";
             return;
         }
@@ -55,8 +41,8 @@ if (entrada && saida && quarto && mensagem && url) {
 
         try {
             const parametros = new URLSearchParams({
-                entrada: entradaIso,
-                saida: saidaIso,
+                entrada: entrada.value,
+                saida: saida.value,
             });
             if (reservaId) parametros.set("reserva_id", reservaId);
             const resposta = await fetch(`${url}?${parametros}`, { signal: controller.signal });
@@ -90,8 +76,8 @@ if (entrada && saida && quarto && mensagem && url) {
         }
     }
 
-    entrada.addEventListener("input", atualizarQuartos);
-    saida.addEventListener("input", atualizarQuartos);
+    entrada.addEventListener("change", atualizarQuartos);
+    saida.addEventListener("change", atualizarQuartos);
     quarto.addEventListener("change", () => {
         quartoSelecionado = quarto.value;
         mostrarPrecoSelecionado();
