@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from datetime import date
 
 from .disponibilidade import quartos_disponiveis
@@ -169,6 +170,9 @@ class EditarQuartoForm(QuartoForm):
 class ReservaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        hoje = timezone.localdate().isoformat()
+        self.fields["data_entrada"].widget.attrs["min"] = hoje
+        self.fields["data_saida"].widget.attrs["min"] = hoje
         self.fields["cliente"].label_from_instance = (
             lambda cliente: f"{cliente} — CPF: {cliente.cpf}"
         )
@@ -198,6 +202,11 @@ class ReservaForm(forms.ModelForm):
         dados = super().clean()
         entrada = dados.get("data_entrada")
         saida = dados.get("data_saida")
+        hoje = timezone.localdate()
+        if entrada and entrada < hoje:
+            self.add_error("data_entrada", "A entrada não pode ser anterior à data de hoje.")
+        if saida and saida < hoje:
+            self.add_error("data_saida", "A saída não pode ser anterior à data de hoje.")
         if entrada and saida and saida <= entrada:
             self.add_error("data_saida", "A saída deve ser posterior à entrada.")
         quarto = dados.get("quarto")

@@ -12,6 +12,11 @@ from .precificacao import calcular_preco_total
 
 
 class DisponibilidadeQuartosTests(TestCase):
+    def setUp(self):
+        relogio_formulario = patch("hotelaria_app.forms.timezone")
+        relogio_formulario.start().localdate.return_value = date(2026, 11, 9)
+        self.addCleanup(relogio_formulario.stop)
+
     @classmethod
     def setUpTestData(cls):
         cls.tipo_simples = TipoQuarto.objects.create(tipo="Simples", preco_diaria="100.00")
@@ -134,6 +139,32 @@ class DisponibilidadeQuartosTests(TestCase):
                 data_entrada=date(2026, 11, 13), data_saida=date(2026, 11, 13),
             )
         self.assertEqual(Reserva.objects.count(), 1)
+
+    def test_reserva_impede_datas_anteriores_a_hoje(self):
+        url = reverse("criar_reserva")
+        with patch("hotelaria_app.forms.timezone.localdate", return_value=date(2026, 11, 14)):
+            pagina = self.client.get(url)
+            self.assertContains(pagina, 'min="2026-11-14"', count=2)
+
+            dados = {
+                "cliente": self.cliente.id,
+                "quarto": self.livre.id,
+                "data_entrada": "2026-11-13",
+                "data_saida": "2026-11-15",
+            }
+            entrada_passada = self.client.post(url, dados)
+            self.assertContains(entrada_passada, "A entrada não pode ser anterior à data de hoje.")
+
+            dados["data_entrada"] = "2026-11-14"
+            dados["data_saida"] = "2026-11-13"
+            saida_passada = self.client.post(url, dados)
+            self.assertContains(saida_passada, "A saída não pode ser anterior à data de hoje.")
+            self.assertEqual(Reserva.objects.count(), 1)
+
+            dados["data_saida"] = "2026-11-15"
+            valida = self.client.post(url, dados)
+            self.assertRedirects(valida, reverse("listar_reservas"))
+            self.assertEqual(Reserva.objects.get(quarto=self.livre).preco_total, Decimal("100.00"))
 
     def test_admin_cria_reserva_com_preco_total(self):
         usuario = User.objects.create_superuser("gerente", "gerente@example.com", "senha-forte")
