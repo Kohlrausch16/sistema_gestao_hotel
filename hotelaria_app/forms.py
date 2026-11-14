@@ -385,3 +385,30 @@ class CadastroForm(forms.ModelForm):
     class Meta:
         model = Relatorio
         fields = ['campos']
+
+
+class CheckinForm(forms.ModelForm):
+    class Meta:
+        model = Reserva
+        fields = ['status']
+        labels = {
+            'status': 'STATUS DA RESERVA'
+        }
+        widgets = {
+            'status': forms.Select(attrs={
+                "class": "campo-formulario placeholder-input input-status"
+            }),
+        }
+
+class CheckoutForm(forms.ModelForm):
+    class Meta:
+        model = Reserva
+        fields = ['status']
+        labels = {
+            'status': 'STATUS DA RESERVA'
+        }
+        widgets = {
+            'status': forms.Select(attrs={
+                "class": "campo-formulario placeholder-input input-status"
+            }),
+        }

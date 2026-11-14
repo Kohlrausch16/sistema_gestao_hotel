@@ -4,7 +4,7 @@ from .models import Quarto, Reserva
 def reservas_ativas_em(dia):
     return Reserva.objects.filter(
         ativo=True,
-        status="A",
+        status__in=("A", "E"),
         data_entrada__lte=dia,
         data_saida__gt=dia,
     )
@@ -13,7 +13,7 @@ def reservas_ativas_em(dia):
 def quartos_disponiveis(entrada, saida, excluir_reserva_id=None):
     reservas_conflitantes = Reserva.objects.filter(
         ativo=True,
-        status="A",
+        status__in=("A", "E"),
         data_entrada__lt=saida,
         data_saida__gt=entrada,
     ).values("quarto_id")
