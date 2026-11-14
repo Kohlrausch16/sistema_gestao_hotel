@@ -200,13 +200,19 @@ def quartos_disponiveis(request):
 def listar_reservas(request):
     pesquisa = " ".join(request.GET.get("q", "").split())
     filtro = request.GET.get("exibir", "sem_finalizadas")
-    if filtro not in ("sem_finalizadas", "todas", "finalizadas"):
+    status_por_filtro = {
+        "ativas": "A",
+        "em_andamento": "E",
+        "canceladas": "C",
+        "finalizadas": "F",
+    }
+    if filtro not in ("sem_finalizadas", "todas", *status_por_filtro):
         filtro = "sem_finalizadas"
     reservas = Reserva.objects.filter(ativo=True).select_related('cliente', 'quarto')
     if filtro == "sem_finalizadas":
         reservas = reservas.exclude(status='F')
-    elif filtro == "finalizadas":
-        reservas = reservas.filter(status='F')
+    elif filtro in status_por_filtro:
+        reservas = reservas.filter(status=status_por_filtro[filtro])
     if pesquisa:
         reservas = reservas.annotate(
             nome_completo_busca=Concat('cliente__nome', Value(' '), 'cliente__sobrenome')

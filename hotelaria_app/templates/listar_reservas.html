@@ -37,7 +37,10 @@
         <select name="exibir" aria-label="Exibir reservas">
             <option value="sem_finalizadas" {% if filtro == 'sem_finalizadas' %}selected{% endif %}>Sem finalizadas</option>
             <option value="todas" {% if filtro == 'todas' %}selected{% endif %}>Todas</option>
-            <option value="finalizadas" {% if filtro == 'finalizadas' %}selected{% endif %}>Somente finalizadas</option>
+            <option value="ativas" {% if filtro == 'ativas' %}selected{% endif %}>Ativas</option>
+            <option value="em_andamento" {% if filtro == 'em_andamento' %}selected{% endif %}>Em andamento</option>
+            <option value="canceladas" {% if filtro == 'canceladas' %}selected{% endif %}>Canceladas</option>
+            <option value="finalizadas" {% if filtro == 'finalizadas' %}selected{% endif %}>Finalizadas</option>
         </select>
         <button type="submit">Buscar</button>
     </form>

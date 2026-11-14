@@ -132,20 +132,43 @@ class DisponibilidadeQuartosTests(TestCase):
             data_entrada=date(2026, 11, 14), data_saida=date(2026, 11, 15),
             status="E",
         )
+        cancelada = Reserva.objects.create(
+            cliente=self.cliente, quarto=self.livre,
+            data_entrada=date(2026, 11, 16), data_saida=date(2026, 11, 17),
+            status="C",
+        )
+        ativa = Reserva.objects.create(
+            cliente=self.cliente, quarto=self.ocupado,
+            data_entrada=date(2026, 11, 18), data_saida=date(2026, 11, 19),
+            status="A",
+        )
         url = reverse("listar_reservas")
 
         padrao = self.client.get(url)
         self.assertEqual(
             [reserva.id for reserva in padrao.context["reservas"]],
-            [em_andamento.id],
+            [em_andamento.id, cancelada.id, ativa.id],
         )
         self.assertContains(padrao, 'value="sem_finalizadas" selected')
 
         todas = self.client.get(url, {"exibir": "todas"})
         self.assertEqual(
             [reserva.id for reserva in todas.context["reservas"]],
-            [finalizada.id, em_andamento.id],
+            [finalizada.id, em_andamento.id, cancelada.id, ativa.id],
         )
+
+        for valor, esperada in (
+            ("ativas", ativa),
+            ("em_andamento", em_andamento),
+            ("canceladas", cancelada),
+            ("finalizadas", finalizada),
+        ):
+            resposta = self.client.get(url, {"exibir": valor})
+            self.assertEqual(
+                [reserva.id for reserva in resposta.context["reservas"]],
+                [esperada.id],
+            )
+            self.assertContains(resposta, f'value="{valor}" selected')
 
         somente_finalizadas = self.client.get(url, {"exibir": "finalizadas", "q": "101"})
         self.assertEqual(
