@@ -664,3 +664,11 @@ label{
         padding: 0.75rem;
     }
 }
+@media print {
+    @page {
+      margin: 0; /* Remove o espaço onde o navegador insere URL, data e título */
+    }
+    body {
+      padding: 1.5cm; /* Recria as margens internas para o conteúdo não colar na borda */
+    }
+  }
