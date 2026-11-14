@@ -53,7 +53,7 @@
                         {% for quarto in quartos %}
                             <tr>
                                 <td class="numero-quarto">{{ quarto.numero }}</td>
-                                <td>{{ quarto.get_tipo_display }}</td>
+                                <td>{{ quarto.tipo }}</td>
                                 <td>R$ {{ quarto.preco_diaria|floatformat:2 }}</td>
                                 <td>
                                     <span class="status-quarto status-{{ quarto.status|lower }}">

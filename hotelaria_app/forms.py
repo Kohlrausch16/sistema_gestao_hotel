@@ -1,8 +1,10 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from datetime import date
 
 from .disponibilidade import quartos_disponiveis
-from .models import Cliente, Quarto, Reserva, Funcionario, Ocorrencia, Relatorio
+from .precificacao import calcular_preco_total
+from .models import Cliente, Quarto, Reserva, Funcionario, Ocorrencia, TarifaSazonal, TipoQuarto, Relatorio
 
 class ClienteForm(forms.ModelForm):
 
@@ -110,6 +112,10 @@ class FuncionarioForm(forms.ModelForm):
         fields = ['nome', 'cargo']
         
 class QuartoForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['tipo'].queryset = TipoQuarto.objects.filter(ativo=True)
+
     class Meta:
         model = Quarto
 
@@ -203,7 +209,21 @@ class ReservaForm(forms.ModelForm):
         saida = dados.get("data_saida")
         if entrada and saida and saida <= entrada:
             self.add_error("data_saida", "A saída deve ser posterior à entrada.")
+        quarto = dados.get("quarto")
+        if quarto and entrada and saida and saida > entrada:
+            try:
+                self.preco_total_calculado = calcular_preco_total(quarto, entrada, saida)
+            except ValidationError as erro:
+                self.add_error(None, erro)
         return dados
+
+    def save(self, commit=True):
+        reserva = super().save(commit=False)
+        reserva.preco_total = self.preco_total_calculado
+        if commit:
+            reserva.save()
+            self.save_m2m()
+        return reserva
 
     class Meta:
         model = Reserva
@@ -262,6 +282,95 @@ class OcorrenciaForm(forms.ModelForm):
                 "class": "campo-formulario placeholder-input input-descricao",
                 "placeholder": "Descreva a ocorrência aqui..."
             }),
+        }
+
+class TipoQuartoForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['TarifaSazonal'].queryset = TarifaSazonal.objects.filter(ativo=True)
+        self.fields['TarifaSazonal'].label_from_instance = (
+            lambda tarifa: (
+                f"{tarifa.descricao} · "
+                f"{tarifa.data_inicio:%d/%m/%Y} a {tarifa.data_fim:%d/%m/%Y} · "
+                f"R$ {tarifa.valor:.2f}"
+            )
+        )
+
+    def clean_preco_diaria(self):
+        preco = self.cleaned_data['preco_diaria']
+        if preco < 0:
+            raise forms.ValidationError("O preço diário não pode ser negativo.")
+        return preco
+
+    class Meta:
+        model = TipoQuarto
+        fields = ['tipo', 'preco_diaria', 'TarifaSazonal']
+        labels = {
+            'tipo': 'TIPO',
+            'preco_diaria': 'PREÇO DIÁRIO',
+            'TarifaSazonal': 'TARIFAS SAZONAIS'
+        }
+        widgets = {
+            'tipo': forms.TextInput(attrs={
+                "class": "campo-formulario placeholder-input input-tipo",
+                "placeholder": "Tipo do quarto"
+            }),
+            'preco_diaria': forms.NumberInput(attrs={
+                "class": "campo-formulario placeholder-input input-preco-diaria",
+                "placeholder": "100.00",
+                "min": "0",
+                "step": "0.01"
+            }),
+            'TarifaSazonal': forms.CheckboxSelectMultiple(),
+        }
+
+class TarifaSazonalForm(forms.ModelForm):
+    def clean_valor(self):
+        valor = self.cleaned_data['valor']
+        if valor < 0:
+            raise forms.ValidationError("O adicional sazonal não pode ser negativo.")
+        return valor
+
+    def clean(self):
+        dados = super().clean()
+        inicio = dados.get('data_inicio')
+        fim = dados.get('data_fim')
+        if inicio and fim and fim < inicio:
+            self.add_error('data_fim', "O fim deve ser igual ou posterior ao início.")
+        return dados
+
+    class Meta:
+        model = TarifaSazonal
+        fields = ['descricao', 'valor', 'data_inicio', 'data_fim']
+        labels = {
+            'descricao': 'DESCRIÇÃO',
+            'valor': 'ADICIONAL POR DIÁRIA',
+            'data_inicio': 'DATA DE INÍCIO',
+            'data_fim': 'DATA DE FIM'
+        }
+        widgets = {
+            'descricao': forms.TextInput(attrs={
+                "class": "campo-formulario placeholder-input input-descricao",
+                "placeholder": "Descrição da tarifa sazonal"
+            }),
+            'valor': forms.NumberInput(attrs={
+                "class": "campo-formulario placeholder-input input-valor",
+                "placeholder": "100.00",
+                "min": "0",
+                "step": "0.01"
+            }),
+            'data_inicio': forms.DateInput(attrs={
+                "type": "date",
+                "class": "campo-formulario placeholder-input input-data-inicio",
+                "placeholder": "01/01/2024"
+            },
+            format="%Y-%m-%d"),
+            'data_fim': forms.DateInput(attrs={
+                "type": "date",
+                "class": "campo-formulario placeholder-input input-data-fim",
+                "placeholder": "05/01/2024"
+            },
+            format="%Y-%m-%d"),
         }
 
 class CadastroForm(forms.ModelForm):

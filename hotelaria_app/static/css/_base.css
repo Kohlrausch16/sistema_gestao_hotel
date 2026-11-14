@@ -121,6 +121,7 @@ aside li > a:focus-visible{
 #icone-clientes{ color: #3B82F6; }
 #icone-quartos{ color: #3B82F6; }
 #icone-reservas{ color: #3B82F6; }
+.icone-menu-azul{ color: #3B82F6; fill: currentColor; }
 
 aside a{
     color: inherit;

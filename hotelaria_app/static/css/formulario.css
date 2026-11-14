@@ -79,6 +79,12 @@ label{
 .container-botoes{
     display: flex;
     gap: 0.5rem;
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 0.5rem;
 }
 
 .botao-formulario{
@@ -246,6 +252,108 @@ label{
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.6rem;
+}
+
+.funcionario-formulario-acoes {
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.formulario-tipo-quarto {
+    display: flex;
+    flex-direction: column;
+}
+
+.campos-tipo-quarto {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+    width: 100%;
+}
+
+.campos-tipo-quarto > .campo-tipo-quarto {
+    min-width: 0;
+}
+
+.formulario-tipo-quarto > .container-botoes {
+    align-self: stretch;
+    box-sizing: border-box;
+    margin-top: 0;
+}
+
+.campo-tarifas-sazonais {
+    grid-column: 1 / -1;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.campo-tarifas-sazonais legend {
+    margin-bottom: 0.5rem;
+    color: #475569;
+    font: 700 0.8rem "Inter", sans-serif;
+}
+
+.opcoes-tarifas-sazonais {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.opcao-tarifa-sazonal label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    box-sizing: border-box;
+    min-height: 3rem;
+    margin: 0;
+    padding: 0.85rem 1rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 7px;
+    background: #FFFFFF;
+    color: #334155;
+    cursor: pointer;
+    font: 500 0.85rem/1.4 "Inter", sans-serif;
+}
+
+.opcao-tarifa-sazonal label:hover,
+.opcao-tarifa-sazonal label:focus-within {
+    border-color: #3B82F6;
+    background: #F8FAFC;
+}
+
+.opcao-tarifa-sazonal input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 1rem;
+    height: 1rem;
+    margin: 0.1rem 0 0;
+    accent-color: #0F172A;
+}
+
+.tarifas-vazias,
+.ajuda-tarifas-sazonais {
+    color: #64748B;
+    font: 0.8rem/1.5 "Inter", sans-serif;
+}
+
+.ajuda-tarifas-sazonais {
+    margin-top: 0.65rem;
+}
+
+.ajuda-tarifas-sazonais a {
+    color: #1D4ED8;
+    text-decoration: underline;
+}
+
+@media (max-width: 800px) {
+    .campos-tipo-quarto {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .opcoes-tarifas-sazonais {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 .funcionario-botao {

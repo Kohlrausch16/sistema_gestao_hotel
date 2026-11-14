@@ -1,15 +1,18 @@
 from datetime import date
+from decimal import Decimal
 from unittest.mock import patch
 
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Cliente, Quarto, Reserva
+from .models import Cliente, Quarto, Reserva, TipoQuarto, TarifaSazonal
+from .precificacao import calcular_preco_total
 
 
 class DisponibilidadeQuartosTests(TestCase):
     @classmethod
     def setUpTestData(cls):
+        cls.tipo_simples = TipoQuarto.objects.create(tipo="Simples", preco_diaria="100.00")
         cls.cliente = Cliente.objects.create(
             nome="Ana",
             sobrenome="Silva",
@@ -19,13 +22,13 @@ class DisponibilidadeQuartosTests(TestCase):
             telefone="11999999999",
         )
         cls.ocupado = Quarto.objects.create(
-            numero="101", tipo="S", capacidade=1, preco_diaria="100.00"
+            numero="101", tipo=cls.tipo_simples, capacidade=1, preco_diaria="100.00"
         )
         cls.livre = Quarto.objects.create(
-            numero="102", tipo="S", capacidade=1, preco_diaria="100.00"
+            numero="102", tipo=cls.tipo_simples, capacidade=1, preco_diaria="100.00"
         )
         cls.manutencao = Quarto.objects.create(
-            numero="103", tipo="S", capacidade=1, preco_diaria="100.00", status="M"
+            numero="103", tipo=cls.tipo_simples, capacidade=1, preco_diaria="100.00", status="M"
         )
         Reserva.objects.create(
             cliente=cls.cliente,
@@ -44,6 +47,23 @@ class DisponibilidadeQuartosTests(TestCase):
             [quarto["id"] for quarto in resposta.json()["quartos"]],
             [self.livre.id],
         )
+        self.assertEqual(resposta.json()["quartos"][0]["tipo"], "Simples")
+
+    def test_listagem_e_cadastro_exibem_tipo_relacionado(self):
+        listagem = self.client.get(reverse("listar_quartos"))
+        cadastro = self.client.get(reverse("cadastrar_quarto"))
+
+        self.assertContains(listagem, "Simples")
+        self.assertContains(cadastro, "Simples")
+
+    def test_relatorio_exibe_tipo_de_quarto_relacionado(self):
+        resposta = self.client.post(reverse("gerar_relatorio"), {
+            "campos": ["quarto", "tipo_quarto"],
+        })
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, "Simples")
+        self.assertContains(resposta, "101")
 
     def test_saida_e_entrada_no_mesmo_dia_nao_conflitam(self):
         resposta = self.client.get(reverse("quartos_disponiveis"), {
@@ -83,6 +103,82 @@ class DisponibilidadeQuartosTests(TestCase):
 
         self.assertRedirects(resposta, reverse("listar_reservas"))
         self.assertEqual(Reserva.objects.count(), 2)
+        self.assertEqual(Reserva.objects.get(quarto=self.livre).preco_total, Decimal("200.00"))
+
+    def test_adicionais_sazonais_somam_somente_nas_noites_aplicaveis(self):
+        alta = TarifaSazonal.objects.create(
+            descricao="Alta temporada", valor="30.00",
+            data_inicio=date(2026, 11, 11), data_fim=date(2026, 11, 12),
+        )
+        feriado = TarifaSazonal.objects.create(
+            descricao="Feriado", valor="10.00",
+            data_inicio=date(2026, 11, 12), data_fim=date(2026, 11, 13),
+        )
+        self.tipo_simples.TarifaSazonal.add(alta, feriado)
+
+        total = calcular_preco_total(
+            self.livre, date(2026, 11, 10), date(2026, 11, 13)
+        )
+        self.assertEqual(total, Decimal("370.00"))
+
+        consulta = self.client.get(reverse("quartos_disponiveis"), {
+            "entrada": "2026-11-10", "saida": "2026-11-13"
+        })
+        preco_livre = next(
+            item["preco_total"] for item in consulta.json()["quartos"]
+            if item["id"] == self.livre.id
+        )
+        self.assertEqual(preco_livre, "370.00")
+
+        resposta = self.client.post(reverse("criar_reserva"), {
+            "cliente": self.cliente.id,
+            "quarto": self.livre.id,
+            "data_entrada": "2026-11-10",
+            "data_saida": "2026-11-13",
+        })
+        self.assertRedirects(resposta, reverse("listar_reservas"))
+        reserva = Reserva.objects.get(quarto=self.livre)
+        self.assertEqual(reserva.preco_total, Decimal("370.00"))
+
+        alta.valor = Decimal("50.00")
+        alta.save(update_fields=["valor"])
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.preco_total, Decimal("370.00"))
+        self.assertContains(self.client.get(reverse("listar_reservas")), "370,00")
+
+    def test_edicao_recalcula_total_para_novas_datas(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        reserva.preco_total = Decimal("200.00")
+        reserva.save(update_fields=["preco_total"])
+        tarifa = TarifaSazonal.objects.create(
+            descricao="Feriado", valor="25.00",
+            data_inicio=date(2026, 11, 12), data_fim=date(2026, 11, 12),
+        )
+        self.tipo_simples.TarifaSazonal.add(tarifa)
+
+        with patch("hotelaria_app.views.timezone.localdate", return_value=date(2026, 11, 9)):
+            resposta = self.client.post(reverse("editar_reserva", args=[reserva.id]), {
+                "cliente": self.cliente.id,
+                "quarto": self.ocupado.id,
+                "data_entrada": "2026-11-10",
+                "data_saida": "2026-11-13",
+            })
+
+        self.assertRedirects(resposta, reverse("listar_reservas"))
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.preco_total, Decimal("325.00"))
+
+    def test_tarifa_na_data_de_saida_nao_entra_no_total(self):
+        tarifa = TarifaSazonal.objects.create(
+            descricao="Próximo período", valor="50.00",
+            data_inicio=date(2026, 11, 13), data_fim=date(2026, 11, 13),
+        )
+        self.tipo_simples.TarifaSazonal.add(tarifa)
+
+        self.assertEqual(
+            calcular_preco_total(self.livre, date(2026, 11, 11), date(2026, 11, 13)),
+            Decimal("200.00"),
+        )
 
     def test_cancelamento_libera_quarto_e_mantem_historico(self):
         reserva = Reserva.objects.get(quarto=self.ocupado)
@@ -263,3 +359,111 @@ class IntegracaoClientesTests(TestCase):
         resposta = self.client.post(reverse("cadastrar_cliente"), {})
         self.assertEqual(resposta.status_code, 200)
         self.assertEqual(Cliente.objects.count(), 0)
+
+
+class TarifasSazonaisTests(TestCase):
+    def test_tipo_com_quarto_cadastrado_nao_pode_ser_excluido(self):
+        tipo = TipoQuarto.objects.create(tipo="Duplo", preco_diaria="150.00")
+        Quarto.objects.create(
+            numero="201", tipo=tipo, capacidade=2, preco_diaria="150.00", ativo=False,
+        )
+
+        resposta = self.client.post(
+            reverse("excluir_tipo_quarto", args=[tipo.id]), follow=True
+        )
+
+        tipo.refresh_from_db()
+        self.assertTrue(tipo.ativo)
+        self.assertContains(resposta, "Não é possível excluir este tipo")
+        self.assertContains(resposta, "Duplo")
+
+    def test_tipo_sem_quartos_e_desativado_e_nao_pode_ser_reutilizado(self):
+        tipo = TipoQuarto.objects.create(tipo="Especial", preco_diaria="150.00")
+        url = reverse("excluir_tipo_quarto", args=[tipo.id])
+        self.assertEqual(self.client.get(url).status_code, 405)
+
+        resposta = self.client.post(url, follow=True)
+
+        tipo.refresh_from_db()
+        self.assertFalse(tipo.ativo)
+        self.assertContains(resposta, "Tipo de quarto excluído com sucesso!")
+        self.assertNotContains(resposta, "Especial")
+        self.assertNotContains(self.client.get(reverse("cadastrar_quarto")), "Especial")
+        self.assertEqual(
+            self.client.get(reverse("editar_tipo_quarto", args=[tipo.id])).status_code,
+            404,
+        )
+
+    def test_exclusao_logica_de_tarifa_desvincula_todos_os_tipos(self):
+        tarifa = TarifaSazonal.objects.create(
+            descricao="Feriado", valor="25.00",
+            data_inicio=date(2026, 12, 1), data_fim=date(2026, 12, 2),
+        )
+        primeiro = TipoQuarto.objects.create(tipo="Simples", preco_diaria="100.00")
+        segundo = TipoQuarto.objects.create(tipo="Duplo", preco_diaria="150.00")
+        primeiro.TarifaSazonal.add(tarifa)
+        segundo.TarifaSazonal.add(tarifa)
+        quarto = Quarto.objects.create(
+            numero="301", tipo=primeiro, capacidade=1, preco_diaria="100.00"
+        )
+        self.assertEqual(
+            calcular_preco_total(quarto, date(2026, 12, 1), date(2026, 12, 3)),
+            Decimal("250.00"),
+        )
+        url = reverse("excluir_tarifa_sazonal", args=[tarifa.id])
+        self.assertEqual(self.client.get(url).status_code, 405)
+
+        resposta = self.client.post(url, follow=True)
+
+        tarifa.refresh_from_db()
+        self.assertFalse(tarifa.ativo)
+        self.assertFalse(primeiro.TarifaSazonal.exists())
+        self.assertFalse(segundo.TarifaSazonal.exists())
+        self.assertContains(resposta, "Tarifa sazonal excluída e removida")
+        self.assertNotContains(resposta, "Feriado")
+        self.assertNotContains(self.client.get(reverse("criar_tipo_quarto")), "Feriado")
+        self.assertEqual(
+            self.client.get(reverse("editar_tarifa_sazonal", args=[tarifa.id])).status_code,
+            404,
+        )
+        self.assertEqual(
+            calcular_preco_total(quarto, date(2026, 12, 1), date(2026, 12, 3)),
+            Decimal("200.00"),
+        )
+
+    def test_cadastro_rejeita_periodo_invertido_e_adicional_negativo(self):
+        resposta = self.client.post(reverse("criar_tarifa_sazonal"), {
+            "descricao": "Período inválido",
+            "valor": "-10.00",
+            "data_inicio": "2026-12-10",
+            "data_fim": "2026-12-09",
+        })
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(TarifaSazonal.objects.count(), 0)
+        self.assertContains(resposta, "O adicional sazonal não pode ser negativo.")
+        self.assertContains(resposta, "O fim deve ser igual ou posterior ao início.")
+
+    def test_tipo_de_quarto_usa_tarifa_sazonal_sem_tarifa_adicional(self):
+        tarifa = TarifaSazonal.objects.create(
+            descricao="Alta temporada",
+            valor="180.00",
+            data_inicio=date(2026, 12, 1),
+            data_fim=date(2027, 1, 31),
+        )
+
+        cadastro = self.client.get(reverse("criar_tipo_quarto"))
+        self.assertContains(cadastro, 'type="checkbox"')
+        self.assertContains(cadastro, "Alta temporada")
+
+        resposta = self.client.post(reverse("criar_tipo_quarto"), {
+            "tipo": "Duplo especial",
+            "preco_diaria": "150.00",
+            "TarifaSazonal": [tarifa.id],
+        })
+
+        self.assertRedirects(resposta, reverse("listar_tipos_quarto"))
+        tipo = TipoQuarto.objects.get(tipo="Duplo especial")
+        self.assertEqual(list(tipo.TarifaSazonal.all()), [tarifa])
+        listagem = self.client.get(reverse("listar_tipos_quarto"))
+        self.assertContains(listagem, "Alta temporada")
+        self.assertNotContains(listagem, "Tarifa adicional")

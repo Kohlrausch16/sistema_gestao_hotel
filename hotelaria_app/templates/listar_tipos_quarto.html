@@ -1,0 +1,80 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Tipos de quarto{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}">
+{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
+    <div class="cabecalho-quartos">
+        <div>
+            <h1 class="titulo-pagina">TIPOS DE QUARTO</h1>
+            <p class="subtitulo-quartos">Consulte os tipos de quarto cadastrados no hotel.</p>
+        </div>
+        <a class="botao-novo-quarto" href="{% url 'criar_tipo_quarto' %}">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Cadastrar tipo
+        </a>
+    </div>
+{% endblock %}
+
+{% block main %}
+    <section class="painel-quartos" aria-label="Lista de tipos de quarto">
+        <div class="painel-cabecalho">
+            <h2>Tipos cadastrados</h2>
+            <span class="contador-quartos">{{ tipos_quarto|length }} tipo{{ tipos_quarto|length|pluralize }}</span>
+        </div>
+
+        {% if tipos_quarto %}
+            <div class="tabela-rolagem">
+                <table class="tabela-quartos">
+                    <thead>
+                        <tr>
+                            <th scope="col">Tipo</th>
+                            <th scope="col">Preço da diária</th>
+                            <th scope="col">Tarifas sazonais</th>
+                            <th scope="col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tipo_quarto in tipos_quarto %}
+                            <tr>
+                                <td class="numero-quarto">{{ tipo_quarto.tipo }}</td>
+                                <td>R$ {{ tipo_quarto.preco_diaria|floatformat:2 }}</td>
+                                <td>
+                                    {% for tarifa in tipo_quarto.TarifaSazonal.all %}
+                                        {{ tarifa.descricao }}{% if not forloop.last %}, {% endif %}
+                                    {% empty %}
+                                        Nenhuma
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <div class="acoes-quarto">
+                                    <a href="{% url 'editar_tipo_quarto' tipo_quarto.id %}" class="botao-editar" aria-label="Editar tipo {{ tipo_quarto.tipo }}" title="Editar tipo">
+                                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                    </a>
+                                    <form action="{% url 'excluir_tipo_quarto' tipo_quarto.id %}" method="post" class="form-excluir-quarto">
+                                        {% csrf_token %}
+                                        <button type="submit" class="botao-excluir" aria-label="Excluir tipo {{ tipo_quarto.tipo }}" title="Excluir tipo">
+                                            <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="lista-vazia">
+                <i class="fa-solid fa-bed" aria-hidden="true"></i>
+                <h3>Nenhum tipo de quarto cadastrado</h3>
+                <p>Cadastre o primeiro tipo para vê-lo nesta lista.</p>
+                <a href="{% url 'criar_tipo_quarto' %}">Cadastrar tipo</a>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

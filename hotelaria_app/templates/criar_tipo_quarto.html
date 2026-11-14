@@ -1,0 +1,49 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Cadastrar tipo de quarto{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}?v=6">
+{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
+    <h1 class="titulo-pagina">CADASTRAR TIPO DE QUARTO</h1>
+{% endblock %}
+
+{% block main %}
+    <form class="formulario-quarto formulario-tipo-quarto" action="{% url 'criar_tipo_quarto' %}" method="post">
+        {% csrf_token %}
+
+        <div class="campos-tipo-quarto">
+        {% for campo in formulario %}
+            {% if campo.name == 'TarifaSazonal' %}
+                <fieldset class="campo-tarifas-sazonais">
+                    <legend>{{ campo.label }}</legend>
+                    <div class="opcoes-tarifas-sazonais">
+                        {% for opcao in campo %}
+                            <div class="opcao-tarifa-sazonal">{{ opcao }}</div>
+                        {% empty %}
+                            <p class="tarifas-vazias">Nenhuma tarifa sazonal cadastrada.</p>
+                        {% endfor %}
+                    </div>
+                    {{ campo.errors }}
+                    <p class="ajuda-tarifas-sazonais">Selecione as tarifas aplicáveis a este tipo. <a href="{% url 'criar_tarifa_sazonal' %}">Cadastrar tarifa sazonal</a></p>
+                </fieldset>
+            {% else %}
+                <div class="campo-tipo-quarto">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                    {{ campo.errors }}
+                </div>
+            {% endif %}
+        {% endfor %}
+        </div>
+
+        <div class="container-botoes">
+            <a class="botao-formulario botao-cancelar" href="{% url 'listar_tipos_quarto' %}">CANCELAR</a>
+            <button class="botao-formulario botao-confirmar" type="submit">CADASTRAR</button>
+        </div>
+    </form>
+{% endblock %}

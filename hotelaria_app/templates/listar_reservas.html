@@ -36,6 +36,7 @@
                             <th scope="col">Quarto</th>
                             <th scope="col">Entrada</th>
                             <th scope="col">Saída</th>
+                            <th scope="col">Preço total</th>
                             <th scope="col">Status</th>
                             <th scope="col">Ações</th>
                         </tr>
@@ -47,6 +48,7 @@
                                 <td class="numero-quarto">{{ reserva.quarto.numero }}</td>
                                 <td>{{ reserva.data_entrada|date:"d/m/Y" }}</td>
                                 <td>{{ reserva.data_saida|date:"d/m/Y" }}</td>
+                                <td>{% if reserva.preco_total is not None %}R$ {{ reserva.preco_total|floatformat:2 }}{% else %}Não registrado{% endif %}</td>
                                 <td>
                                     <span class="status-quarto status-reserva-{{ reserva.status|lower }}">
                                         {{ reserva.get_status_display }}

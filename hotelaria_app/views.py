@@ -6,9 +6,11 @@ from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
-from .models import Cliente, Quarto, Reserva
+from django.db import transaction
+from .models import Cliente, Quarto, Reserva, TarifaSazonal, TipoQuarto
 from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis
-from .forms import ClienteForm, ReservaForm
+from .precificacao import calcular_preco_total
+from .forms import ClienteForm, ReservaForm, TarifaSazonalForm, TipoQuartoForm
 from .forms import QuartoForm
 from .forms import EditarQuartoForm
 from django.contrib.auth.forms import UserCreationForm
@@ -64,7 +66,7 @@ def cadastrar_quarto(request):
 
 def listar_quartos(request):
     pesquisa = request.GET.get("q", "").strip()
-    quartos = Quarto.objects.all()
+    quartos = Quarto.objects.select_related('tipo')
     quartos = quartos.filter(ativo=True)
     if pesquisa:
         quartos = quartos.filter(numero__icontains=pesquisa)
@@ -142,10 +144,17 @@ def quartos_disponiveis(request):
         except ValueError:
             return JsonResponse({"erro": "Reserva inválida."}, status=400)
 
-    quartos = buscar_quartos_disponiveis(entrada, saida, excluir_reserva_id=reserva_id)
+    quartos = buscar_quartos_disponiveis(
+        entrada, saida, excluir_reserva_id=reserva_id
+    ).select_related('tipo').prefetch_related('tipo__TarifaSazonal')
     return JsonResponse({
         "quartos": [
-            {"id": quarto.id, "numero": quarto.numero, "tipo": quarto.get_tipo_display()}
+            {
+                "id": quarto.id,
+                "numero": quarto.numero,
+                "tipo": str(quarto.tipo),
+                "preco_total": str(calcular_preco_total(quarto, entrada, saida)),
+            }
             for quarto in quartos
         ]
     })
@@ -153,6 +162,7 @@ def quartos_disponiveis(request):
 def listar_reservas(request):
     reservas = Reserva.objects.all()
     reservas = reservas.filter(ativo=True)
+    reservas = reservas.order_by('data_entrada')
 
     dados = {
         "reservas": reservas,
@@ -194,6 +204,11 @@ def cancelar_reserva(request, reserva_id):
     if reserva.data_entrada <= timezone.localdate():
         messages.error(request, "A reserva só pode ser cancelada antes do check-in.")
         return redirect('listar_reservas')
+
+    reserva.status = 'C'
+    reserva.save(update_fields=['status'])
+    messages.success(request, "Reserva cancelada com sucesso!")
+    return redirect('listar_reservas')
 
 def cadastrar_funcionario(request):
 
@@ -332,10 +347,6 @@ def ativar_funcionario(request, id):
     messages.success(request, mensagem)
 
     return redirect('listar_funcionarios')
-    reserva.status = 'C'
-    reserva.save(update_fields=['status'])
-    messages.success(request, "Reserva cancelada com sucesso!")
-    return redirect('listar_reservas')
 
 def registrar_ocorrencia(request):
     if request.method == 'POST':
@@ -346,7 +357,7 @@ def registrar_ocorrencia(request):
 
         if reserva.status != 'A':
             messages.error(request, "Não é possível registrar ocorrências para reservas que não estão ativas.")
-            return redirect('listar_reservas')
+            return redirect('listar_ocorrencia')
 
         Ocorrencia.objects.create(
             reserva=reserva,
@@ -354,7 +365,7 @@ def registrar_ocorrencia(request):
         )
 
         messages.success(request, "Ocorrência registrada com sucesso!")
-        return redirect('listar_reservas')
+        return redirect('listar_ocorrencia')
 
     reservas_ativas = Reserva.objects.filter(status='A')
     dados = {
@@ -438,6 +449,88 @@ def visualizar_ocorrencia(request, ocorrencia_id):
     }
     return render(request, 'visualizar_ocorrencia.html', dados)
 
+def criar_tipo_quarto(request):
+    formulario = TipoQuartoForm(request.POST or None)
+    if request.method == 'POST' and formulario.is_valid():
+        formulario.save()
+        messages.success(request, "Tipo de quarto criado com sucesso!")
+        return redirect('listar_tipos_quarto')
+
+    return render(request, 'criar_tipo_quarto.html', {'formulario': formulario})
+
+def listar_tipos_quarto(request):
+    tipos_quarto = TipoQuarto.objects.filter(ativo=True).prefetch_related('TarifaSazonal').order_by('tipo')
+    dados = {
+        'tipos_quarto': tipos_quarto
+    }
+    return render(request, 'listar_tipos_quarto.html', dados)
+
+def editar_tipo_quarto(request, tipo_id):
+    tipo_quarto = get_object_or_404(TipoQuarto, id=tipo_id, ativo=True)
+    formulario = TipoQuartoForm(request.POST or None, instance=tipo_quarto)
+
+    if request.method == 'POST' and formulario.is_valid():
+        formulario.save()
+        messages.success(request, "Tipo de quarto atualizado com sucesso!")
+        return redirect('listar_tipos_quarto')
+
+    dados = {
+        'tipo_quarto': tipo_quarto,
+        'formulario': formulario
+    }
+    return render(request, 'editar_tipo_quarto.html', dados)
+
+@require_POST
+def excluir_tipo_quarto(request, tipo_id):
+    tipo_quarto = get_object_or_404(TipoQuarto, id=tipo_id, ativo=True)
+    if Quarto.objects.filter(tipo=tipo_quarto).exists():
+        messages.error(request, "Não é possível excluir este tipo: há quartos cadastrados com ele.")
+        return redirect('listar_tipos_quarto')
+
+    tipo_quarto.ativo = False
+    tipo_quarto.save(update_fields=['ativo'])
+    messages.success(request, "Tipo de quarto excluído com sucesso!")
+    return redirect('listar_tipos_quarto')
+
+def criar_tarifa_sazonal(request):
+    formulario = TarifaSazonalForm(request.POST or None)
+    if request.method == 'POST' and formulario.is_valid():
+        formulario.save()
+        messages.success(request, "Tarifa sazonal criada com sucesso!")
+        return redirect('listar_tarifas_sazonais')
+
+    return render(request, 'criar_tarifa_sazonal.html', {'formulario': formulario})
+
+def listar_tarifas_sazonais(request):
+    tarifas_sazonais = TarifaSazonal.objects.filter(ativo=True).order_by('data_inicio', 'descricao')
+    return render(request, 'listar_tarifas_sazonais.html', {
+        'tarifas_sazonais': tarifas_sazonais,
+    })
+
+def editar_tarifa_sazonal(request, tarifa_id):
+    tarifa_sazonal = get_object_or_404(TarifaSazonal, id=tarifa_id, ativo=True)
+    formulario = TarifaSazonalForm(request.POST or None, instance=tarifa_sazonal)
+    if request.method == 'POST' and formulario.is_valid():
+        formulario.save()
+        messages.success(request, "Tarifa sazonal atualizada com sucesso!")
+        return redirect('listar_tarifas_sazonais')
+
+    return render(request, 'editar_tarifa_sazonal.html', {
+        'tarifa_sazonal': tarifa_sazonal,
+        'formulario': formulario,
+    })
+
+@require_POST
+def excluir_tarifa_sazonal(request, tarifa_id):
+    with transaction.atomic():
+        tarifa = get_object_or_404(TarifaSazonal, id=tarifa_id, ativo=True)
+        tarifa.ativo = False
+        tarifa.save(update_fields=['ativo'])
+        tarifa.tipoquarto_set.clear()
+
+    messages.success(request, "Tarifa sazonal excluída e removida dos tipos de quarto!")
+    return redirect('listar_tarifas_sazonais')
+
 def gerar_relatorio(request):
     formulario = CadastroForm(
         request.POST if request.method == 'POST' else None
@@ -447,7 +540,7 @@ def gerar_relatorio(request):
         campos_selecionados = formulario.cleaned_data['campos']
         nomes_campos = dict(Relatorio.CAMPOS_CHOICE)
         reservas = Reserva.objects.filter(ativo=True).select_related(
-            'cliente', 'quarto'
+            'cliente', 'quarto__tipo'
         ).order_by('data_entrada')
         valores_por_reserva = []
 
@@ -456,7 +549,7 @@ def gerar_relatorio(request):
                 'cliente': str(reserva.cliente),
                 'quarto': reserva.quarto.numero,
                 'data_entrada': reserva.data_entrada.strftime('%d/%m/%Y'),
-                'tipo_quarto': reserva.quarto.get_tipo_display(),
+                'tipo_quarto': str(reserva.quarto.tipo),
                 'data_saida': reserva.data_saida.strftime('%d/%m/%Y'),
                 'status': reserva.get_status_display(),
             }
