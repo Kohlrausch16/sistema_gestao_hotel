@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 from .models import Cliente, Quarto, Reserva, TarifaSazonal, TipoQuarto
 from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis
+from .precificacao import calcular_preco_total
 from .forms import ClienteForm, ReservaForm, TarifaSazonalForm, TipoQuartoForm
 from .forms import QuartoForm
 from .forms import EditarQuartoForm
@@ -142,10 +143,17 @@ def quartos_disponiveis(request):
         except ValueError:
             return JsonResponse({"erro": "Reserva inválida."}, status=400)
 
-    quartos = buscar_quartos_disponiveis(entrada, saida, excluir_reserva_id=reserva_id)
+    quartos = buscar_quartos_disponiveis(
+        entrada, saida, excluir_reserva_id=reserva_id
+    ).select_related('tipo').prefetch_related('tipo__TarifaSazonal')
     return JsonResponse({
         "quartos": [
-            {"id": quarto.id, "numero": quarto.numero, "tipo": str(quarto.tipo)}
+            {
+                "id": quarto.id,
+                "numero": quarto.numero,
+                "tipo": str(quarto.tipo),
+                "preco_total": str(calcular_preco_total(quarto, entrada, saida)),
+            }
             for quarto in quartos
         ]
     })

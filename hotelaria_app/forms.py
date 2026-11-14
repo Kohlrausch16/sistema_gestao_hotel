@@ -1,7 +1,9 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from datetime import date
 
 from .disponibilidade import quartos_disponiveis
+from .precificacao import calcular_preco_total
 from .models import Cliente, Quarto, Reserva, Funcionario, Ocorrencia, TarifaSazonal, TipoQuarto
 
 class ClienteForm(forms.ModelForm):
@@ -203,7 +205,21 @@ class ReservaForm(forms.ModelForm):
         saida = dados.get("data_saida")
         if entrada and saida and saida <= entrada:
             self.add_error("data_saida", "A saída deve ser posterior à entrada.")
+        quarto = dados.get("quarto")
+        if quarto and entrada and saida and saida > entrada:
+            try:
+                self.preco_total_calculado = calcular_preco_total(quarto, entrada, saida)
+            except ValidationError as erro:
+                self.add_error(None, erro)
         return dados
+
+    def save(self, commit=True):
+        reserva = super().save(commit=False)
+        reserva.preco_total = self.preco_total_calculado
+        if commit:
+            reserva.save()
+            self.save_m2m()
+        return reserva
 
     class Meta:
         model = Reserva
@@ -275,6 +291,12 @@ class TipoQuartoForm(forms.ModelForm):
             )
         )
 
+    def clean_preco_diaria(self):
+        preco = self.cleaned_data['preco_diaria']
+        if preco < 0:
+            raise forms.ValidationError("O preço diário não pode ser negativo.")
+        return preco
+
     class Meta:
         model = TipoQuarto
         fields = ['tipo', 'preco_diaria', 'TarifaSazonal']
@@ -298,12 +320,26 @@ class TipoQuartoForm(forms.ModelForm):
         }
 
 class TarifaSazonalForm(forms.ModelForm):
+    def clean_valor(self):
+        valor = self.cleaned_data['valor']
+        if valor < 0:
+            raise forms.ValidationError("O adicional sazonal não pode ser negativo.")
+        return valor
+
+    def clean(self):
+        dados = super().clean()
+        inicio = dados.get('data_inicio')
+        fim = dados.get('data_fim')
+        if inicio and fim and fim < inicio:
+            self.add_error('data_fim', "O fim deve ser igual ou posterior ao início.")
+        return dados
+
     class Meta:
         model = TarifaSazonal
         fields = ['descricao', 'valor', 'data_inicio', 'data_fim']
         labels = {
             'descricao': 'DESCRIÇÃO',
-            'valor': 'VALOR',
+            'valor': 'ADICIONAL POR DIÁRIA',
             'data_inicio': 'DATA DE INÍCIO',
             'data_fim': 'DATA DE FIM'
         }

@@ -83,6 +83,7 @@ class Reserva(models.Model):
     quarto = models.ForeignKey(Quarto, on_delete=models.CASCADE)
     data_entrada = models.DateField()
     data_saida = models.DateField()
+    preco_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     ativo = models.BooleanField(default=True)
     status = models.CharField(max_length=1, default='A', choices=STATUS_RESERVA_CHOICES)
 

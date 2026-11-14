@@ -7,6 +7,15 @@ const reservaId = document.querySelector("[data-reserva-id]")?.dataset.reservaId
 
 if (entrada && saida && quarto && mensagem && url) {
     let consultaAtual;
+    let quartosDisponiveis = [];
+    const moeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+
+    function mostrarPrecoSelecionado() {
+        const selecionado = quartosDisponiveis.find((item) => String(item.id) === quarto.value);
+        mensagem.textContent = selecionado
+            ? `Preço total da estadia: ${moeda.format(Number(selecionado.preco_total))}`
+            : "Selecione um quarto para ver o preço total da estadia.";
+    }
 
     async function atualizarQuartos() {
         const selecaoAnterior = quarto.value || quarto.dataset.selecaoInicial || "";
@@ -14,6 +23,7 @@ if (entrada && saida && quarto && mensagem && url) {
         consultaAtual?.abort();
         quarto.replaceChildren(new Option("Selecione as datas primeiro", ""));
         quarto.disabled = true;
+        quartosDisponiveis = [];
 
         if (!entrada.value || !saida.value) {
             mensagem.textContent = "Informe a entrada e a saída para ver os quartos disponíveis.";
@@ -39,17 +49,23 @@ if (entrada && saida && quarto && mensagem && url) {
             const dados = await resposta.json();
             if (!resposta.ok) throw new Error(dados.erro || "Não foi possível consultar os quartos.");
 
+            quartosDisponiveis = dados.quartos;
             quarto.replaceChildren(new Option("Selecione um quarto", ""));
             for (const disponivel of dados.quartos) {
-                quarto.add(new Option(`${disponivel.numero} - ${disponivel.tipo}`, disponivel.id));
+                quarto.add(new Option(
+                    `${disponivel.numero} - ${disponivel.tipo} - ${moeda.format(Number(disponivel.preco_total))}`,
+                    disponivel.id
+                ));
             }
             if (dados.quartos.some((disponivel) => String(disponivel.id) === selecaoAnterior)) {
                 quarto.value = selecaoAnterior;
             }
             quarto.disabled = dados.quartos.length === 0;
-            mensagem.textContent = dados.quartos.length
-                ? ""
-                : "Nenhum quarto disponível nesse período.";
+            if (dados.quartos.length) {
+                mostrarPrecoSelecionado();
+            } else {
+                mensagem.textContent = "Nenhum quarto disponível nesse período.";
+            }
         } catch (erro) {
             if (erro.name !== "AbortError") {
                 mensagem.textContent = erro.message;
@@ -60,5 +76,6 @@ if (entrada && saida && quarto && mensagem && url) {
     quarto.dataset.selecaoInicial = quarto.value;
     entrada.addEventListener("change", atualizarQuartos);
     saida.addEventListener("change", atualizarQuartos);
+    quarto.addEventListener("change", mostrarPrecoSelecionado);
     atualizarQuartos();
 }

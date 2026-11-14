@@ -1,10 +1,12 @@
 from datetime import date
+from decimal import Decimal
 from unittest.mock import patch
 
 from django.test import TestCase
 from django.urls import reverse
 
 from .models import Cliente, Quarto, Reserva, TipoQuarto, TarifaSazonal
+from .precificacao import calcular_preco_total
 
 
 class DisponibilidadeQuartosTests(TestCase):
@@ -92,6 +94,82 @@ class DisponibilidadeQuartosTests(TestCase):
 
         self.assertRedirects(resposta, reverse("listar_reservas"))
         self.assertEqual(Reserva.objects.count(), 2)
+        self.assertEqual(Reserva.objects.get(quarto=self.livre).preco_total, Decimal("200.00"))
+
+    def test_adicionais_sazonais_somam_somente_nas_noites_aplicaveis(self):
+        alta = TarifaSazonal.objects.create(
+            descricao="Alta temporada", valor="30.00",
+            data_inicio=date(2026, 11, 11), data_fim=date(2026, 11, 12),
+        )
+        feriado = TarifaSazonal.objects.create(
+            descricao="Feriado", valor="10.00",
+            data_inicio=date(2026, 11, 12), data_fim=date(2026, 11, 13),
+        )
+        self.tipo_simples.TarifaSazonal.add(alta, feriado)
+
+        total = calcular_preco_total(
+            self.livre, date(2026, 11, 10), date(2026, 11, 13)
+        )
+        self.assertEqual(total, Decimal("370.00"))
+
+        consulta = self.client.get(reverse("quartos_disponiveis"), {
+            "entrada": "2026-11-10", "saida": "2026-11-13"
+        })
+        preco_livre = next(
+            item["preco_total"] for item in consulta.json()["quartos"]
+            if item["id"] == self.livre.id
+        )
+        self.assertEqual(preco_livre, "370.00")
+
+        resposta = self.client.post(reverse("criar_reserva"), {
+            "cliente": self.cliente.id,
+            "quarto": self.livre.id,
+            "data_entrada": "2026-11-10",
+            "data_saida": "2026-11-13",
+        })
+        self.assertRedirects(resposta, reverse("listar_reservas"))
+        reserva = Reserva.objects.get(quarto=self.livre)
+        self.assertEqual(reserva.preco_total, Decimal("370.00"))
+
+        alta.valor = Decimal("50.00")
+        alta.save(update_fields=["valor"])
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.preco_total, Decimal("370.00"))
+        self.assertContains(self.client.get(reverse("listar_reservas")), "370,00")
+
+    def test_edicao_recalcula_total_para_novas_datas(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        reserva.preco_total = Decimal("200.00")
+        reserva.save(update_fields=["preco_total"])
+        tarifa = TarifaSazonal.objects.create(
+            descricao="Feriado", valor="25.00",
+            data_inicio=date(2026, 11, 12), data_fim=date(2026, 11, 12),
+        )
+        self.tipo_simples.TarifaSazonal.add(tarifa)
+
+        with patch("hotelaria_app.views.timezone.localdate", return_value=date(2026, 11, 9)):
+            resposta = self.client.post(reverse("editar_reserva", args=[reserva.id]), {
+                "cliente": self.cliente.id,
+                "quarto": self.ocupado.id,
+                "data_entrada": "2026-11-10",
+                "data_saida": "2026-11-13",
+            })
+
+        self.assertRedirects(resposta, reverse("listar_reservas"))
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.preco_total, Decimal("325.00"))
+
+    def test_tarifa_na_data_de_saida_nao_entra_no_total(self):
+        tarifa = TarifaSazonal.objects.create(
+            descricao="Próximo período", valor="50.00",
+            data_inicio=date(2026, 11, 13), data_fim=date(2026, 11, 13),
+        )
+        self.tipo_simples.TarifaSazonal.add(tarifa)
+
+        self.assertEqual(
+            calcular_preco_total(self.livre, date(2026, 11, 11), date(2026, 11, 13)),
+            Decimal("200.00"),
+        )
 
     def test_cancelamento_libera_quarto_e_mantem_historico(self):
         reserva = Reserva.objects.get(quarto=self.ocupado)
@@ -275,6 +353,18 @@ class IntegracaoClientesTests(TestCase):
 
 
 class TarifasSazonaisTests(TestCase):
+    def test_cadastro_rejeita_periodo_invertido_e_adicional_negativo(self):
+        resposta = self.client.post(reverse("criar_tarifa_sazonal"), {
+            "descricao": "Período inválido",
+            "valor": "-10.00",
+            "data_inicio": "2026-12-10",
+            "data_fim": "2026-12-09",
+        })
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(TarifaSazonal.objects.count(), 0)
+        self.assertContains(resposta, "O adicional sazonal não pode ser negativo.")
+        self.assertContains(resposta, "O fim deve ser igual ou posterior ao início.")
+
     def test_tipo_de_quarto_usa_tarifa_sazonal_sem_tarifa_adicional(self):
         tarifa = TarifaSazonal.objects.create(
             descricao="Alta temporada",
