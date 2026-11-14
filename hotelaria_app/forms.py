@@ -112,6 +112,10 @@ class FuncionarioForm(forms.ModelForm):
         fields = ['nome', 'cargo']
         
 class QuartoForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['tipo'].queryset = TipoQuarto.objects.filter(ativo=True)
+
     class Meta:
         model = Quarto
 
@@ -283,6 +287,7 @@ class OcorrenciaForm(forms.ModelForm):
 class TipoQuartoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['TarifaSazonal'].queryset = TarifaSazonal.objects.filter(ativo=True)
         self.fields['TarifaSazonal'].label_from_instance = (
             lambda tarifa: (
                 f"{tarifa.descricao} · "

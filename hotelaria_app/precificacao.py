@@ -12,7 +12,7 @@ def calcular_preco_total(quarto, entrada, saida):
     tipo = quarto.tipo
     tarifas = [
         tarifa for tarifa in tipo.TarifaSazonal.all()
-        if tarifa.data_inicio < saida and tarifa.data_fim >= entrada
+        if tarifa.ativo and tarifa.data_inicio < saida and tarifa.data_fim >= entrada
     ]
     total = Decimal("0.00")
     dia = entrada

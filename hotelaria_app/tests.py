@@ -353,6 +353,75 @@ class IntegracaoClientesTests(TestCase):
 
 
 class TarifasSazonaisTests(TestCase):
+    def test_tipo_com_quarto_cadastrado_nao_pode_ser_excluido(self):
+        tipo = TipoQuarto.objects.create(tipo="Duplo", preco_diaria="150.00")
+        Quarto.objects.create(
+            numero="201", tipo=tipo, capacidade=2, preco_diaria="150.00", ativo=False,
+        )
+
+        resposta = self.client.post(
+            reverse("excluir_tipo_quarto", args=[tipo.id]), follow=True
+        )
+
+        tipo.refresh_from_db()
+        self.assertTrue(tipo.ativo)
+        self.assertContains(resposta, "Não é possível excluir este tipo")
+        self.assertContains(resposta, "Duplo")
+
+    def test_tipo_sem_quartos_e_desativado_e_nao_pode_ser_reutilizado(self):
+        tipo = TipoQuarto.objects.create(tipo="Especial", preco_diaria="150.00")
+        url = reverse("excluir_tipo_quarto", args=[tipo.id])
+        self.assertEqual(self.client.get(url).status_code, 405)
+
+        resposta = self.client.post(url, follow=True)
+
+        tipo.refresh_from_db()
+        self.assertFalse(tipo.ativo)
+        self.assertContains(resposta, "Tipo de quarto excluído com sucesso!")
+        self.assertNotContains(resposta, "Especial")
+        self.assertNotContains(self.client.get(reverse("cadastrar_quarto")), "Especial")
+        self.assertEqual(
+            self.client.get(reverse("editar_tipo_quarto", args=[tipo.id])).status_code,
+            404,
+        )
+
+    def test_exclusao_logica_de_tarifa_desvincula_todos_os_tipos(self):
+        tarifa = TarifaSazonal.objects.create(
+            descricao="Feriado", valor="25.00",
+            data_inicio=date(2026, 12, 1), data_fim=date(2026, 12, 2),
+        )
+        primeiro = TipoQuarto.objects.create(tipo="Simples", preco_diaria="100.00")
+        segundo = TipoQuarto.objects.create(tipo="Duplo", preco_diaria="150.00")
+        primeiro.TarifaSazonal.add(tarifa)
+        segundo.TarifaSazonal.add(tarifa)
+        quarto = Quarto.objects.create(
+            numero="301", tipo=primeiro, capacidade=1, preco_diaria="100.00"
+        )
+        self.assertEqual(
+            calcular_preco_total(quarto, date(2026, 12, 1), date(2026, 12, 3)),
+            Decimal("250.00"),
+        )
+        url = reverse("excluir_tarifa_sazonal", args=[tarifa.id])
+        self.assertEqual(self.client.get(url).status_code, 405)
+
+        resposta = self.client.post(url, follow=True)
+
+        tarifa.refresh_from_db()
+        self.assertFalse(tarifa.ativo)
+        self.assertFalse(primeiro.TarifaSazonal.exists())
+        self.assertFalse(segundo.TarifaSazonal.exists())
+        self.assertContains(resposta, "Tarifa sazonal excluída e removida")
+        self.assertNotContains(resposta, "Feriado")
+        self.assertNotContains(self.client.get(reverse("criar_tipo_quarto")), "Feriado")
+        self.assertEqual(
+            self.client.get(reverse("editar_tarifa_sazonal", args=[tarifa.id])).status_code,
+            404,
+        )
+        self.assertEqual(
+            calcular_preco_total(quarto, date(2026, 12, 1), date(2026, 12, 3)),
+            Decimal("200.00"),
+        )
+
     def test_cadastro_rejeita_periodo_invertido_e_adicional_negativo(self):
         resposta = self.client.post(reverse("criar_tarifa_sazonal"), {
             "descricao": "Período inválido",

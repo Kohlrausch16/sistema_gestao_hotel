@@ -51,9 +51,17 @@
                                     {% endfor %}
                                 </td>
                                 <td>
+                                    <div class="acoes-quarto">
                                     <a href="{% url 'editar_tipo_quarto' tipo_quarto.id %}" class="botao-editar" aria-label="Editar tipo {{ tipo_quarto.tipo }}" title="Editar tipo">
                                         <i class="fa-solid fa-pen" aria-hidden="true"></i>
                                     </a>
+                                    <form action="{% url 'excluir_tipo_quarto' tipo_quarto.id %}" method="post" class="form-excluir-quarto">
+                                        {% csrf_token %}
+                                        <button type="submit" class="botao-excluir" aria-label="Excluir tipo {{ tipo_quarto.tipo }}" title="Excluir tipo">
+                                            <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}

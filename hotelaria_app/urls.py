@@ -37,8 +37,10 @@ urlpatterns = [
     path('tarifa_sazonal/criar/', views.criar_tarifa_sazonal, name='criar_tarifa_sazonal'),
     path('tarifa_sazonal/listar/', views.listar_tarifas_sazonais, name='listar_tarifas_sazonais'),
     path('tarifa_sazonal/<int:tarifa_id>/editar/', views.editar_tarifa_sazonal, name='editar_tarifa_sazonal'),
+    path('tarifa_sazonal/<int:tarifa_id>/excluir/', views.excluir_tarifa_sazonal, name='excluir_tarifa_sazonal'),
 
     path('tipo_quarto/criar/', views.criar_tipo_quarto, name='criar_tipo_quarto'),
     path('tipo_quarto/listar/', views.listar_tipos_quarto, name='listar_tipos_quarto'),
     path('tipo_quarto/<int:tipo_id>/editar/', views.editar_tipo_quarto, name='editar_tipo_quarto'),
+    path('tipo_quarto/<int:tipo_id>/excluir/', views.excluir_tipo_quarto, name='excluir_tipo_quarto'),
 ]

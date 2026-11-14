@@ -54,6 +54,7 @@ class TipoQuarto(models.Model):
     tipo = models.CharField(max_length=20)
     preco_diaria = models.DecimalField(max_digits=10, decimal_places=2)
     TarifaSazonal = models.ManyToManyField('TarifaSazonal', blank=True)
+    ativo = models.BooleanField(default=True)
 
     def __str__(self):
         return self.tipo
@@ -63,6 +64,7 @@ class TarifaSazonal(models.Model):
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     data_inicio = models.DateField()
     data_fim = models.DateField()
+    ativo = models.BooleanField(default=True)
 
     def __str__(self):
         return self.descricao

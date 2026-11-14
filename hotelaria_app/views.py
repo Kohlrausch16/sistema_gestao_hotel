@@ -6,6 +6,7 @@ from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
+from django.db import transaction
 from .models import Cliente, Quarto, Reserva, TarifaSazonal, TipoQuarto
 from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis
 from .precificacao import calcular_preco_total
@@ -457,14 +458,14 @@ def criar_tipo_quarto(request):
     return render(request, 'criar_tipo_quarto.html', {'formulario': formulario})
 
 def listar_tipos_quarto(request):
-    tipos_quarto = TipoQuarto.objects.prefetch_related('TarifaSazonal').order_by('tipo')
+    tipos_quarto = TipoQuarto.objects.filter(ativo=True).prefetch_related('TarifaSazonal').order_by('tipo')
     dados = {
         'tipos_quarto': tipos_quarto
     }
     return render(request, 'listar_tipos_quarto.html', dados)
 
 def editar_tipo_quarto(request, tipo_id):
-    tipo_quarto = get_object_or_404(TipoQuarto, id=tipo_id)
+    tipo_quarto = get_object_or_404(TipoQuarto, id=tipo_id, ativo=True)
     formulario = TipoQuartoForm(request.POST or None, instance=tipo_quarto)
 
     if request.method == 'POST' and formulario.is_valid():
@@ -478,6 +479,18 @@ def editar_tipo_quarto(request, tipo_id):
     }
     return render(request, 'editar_tipo_quarto.html', dados)
 
+@require_POST
+def excluir_tipo_quarto(request, tipo_id):
+    tipo_quarto = get_object_or_404(TipoQuarto, id=tipo_id, ativo=True)
+    if Quarto.objects.filter(tipo=tipo_quarto).exists():
+        messages.error(request, "Não é possível excluir este tipo: há quartos cadastrados com ele.")
+        return redirect('listar_tipos_quarto')
+
+    tipo_quarto.ativo = False
+    tipo_quarto.save(update_fields=['ativo'])
+    messages.success(request, "Tipo de quarto excluído com sucesso!")
+    return redirect('listar_tipos_quarto')
+
 def criar_tarifa_sazonal(request):
     formulario = TarifaSazonalForm(request.POST or None)
     if request.method == 'POST' and formulario.is_valid():
@@ -488,13 +501,13 @@ def criar_tarifa_sazonal(request):
     return render(request, 'criar_tarifa_sazonal.html', {'formulario': formulario})
 
 def listar_tarifas_sazonais(request):
-    tarifas_sazonais = TarifaSazonal.objects.all().order_by('data_inicio', 'descricao')
+    tarifas_sazonais = TarifaSazonal.objects.filter(ativo=True).order_by('data_inicio', 'descricao')
     return render(request, 'listar_tarifas_sazonais.html', {
         'tarifas_sazonais': tarifas_sazonais,
     })
 
 def editar_tarifa_sazonal(request, tarifa_id):
-    tarifa_sazonal = get_object_or_404(TarifaSazonal, id=tarifa_id)
+    tarifa_sazonal = get_object_or_404(TarifaSazonal, id=tarifa_id, ativo=True)
     formulario = TarifaSazonalForm(request.POST or None, instance=tarifa_sazonal)
     if request.method == 'POST' and formulario.is_valid():
         formulario.save()
@@ -505,3 +518,14 @@ def editar_tarifa_sazonal(request, tarifa_id):
         'tarifa_sazonal': tarifa_sazonal,
         'formulario': formulario,
     })
+
+@require_POST
+def excluir_tarifa_sazonal(request, tarifa_id):
+    with transaction.atomic():
+        tarifa = get_object_or_404(TarifaSazonal, id=tarifa_id, ativo=True)
+        tarifa.ativo = False
+        tarifa.save(update_fields=['ativo'])
+        tarifa.tipoquarto_set.clear()
+
+    messages.success(request, "Tarifa sazonal excluída e removida dos tipos de quarto!")
+    return redirect('listar_tarifas_sazonais')
