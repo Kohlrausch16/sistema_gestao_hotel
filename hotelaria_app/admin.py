@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cliente, Quarto, TipoQuarto, Funcionario, Ocorrencia
+from .models import Cliente, Quarto, TipoQuarto, Funcionario, Ocorrencia, Relatorio
 
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
@@ -17,3 +17,6 @@ class TipoQuartoAdmin(admin.ModelAdmin):
 @admin.register(Ocorrencia)
 class OcorrenciaAdmin(admin.ModelAdmin):
     list_display = ("reserva", "descricao", "data_ocorrencia")
+@admin.register(Relatorio)
+class RelatorioAdmin(admin.ModelAdmin):
+    list_display = ("campos",)

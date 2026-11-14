@@ -43,4 +43,5 @@ urlpatterns = [
     path('tipo_quarto/listar/', views.listar_tipos_quarto, name='listar_tipos_quarto'),
     path('tipo_quarto/<int:tipo_id>/editar/', views.editar_tipo_quarto, name='editar_tipo_quarto'),
     path('tipo_quarto/<int:tipo_id>/excluir/', views.excluir_tipo_quarto, name='excluir_tipo_quarto'),
+    path('relatorio/', views.gerar_relatorio, name='gerar_relatorio'),
 ]

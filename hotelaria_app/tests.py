@@ -56,6 +56,15 @@ class DisponibilidadeQuartosTests(TestCase):
         self.assertContains(listagem, "Simples")
         self.assertContains(cadastro, "Simples")
 
+    def test_relatorio_exibe_tipo_de_quarto_relacionado(self):
+        resposta = self.client.post(reverse("gerar_relatorio"), {
+            "campos": ["quarto", "tipo_quarto"],
+        })
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, "Simples")
+        self.assertContains(resposta, "101")
+
     def test_saida_e_entrada_no_mesmo_dia_nao_conflitam(self):
         resposta = self.client.get(reverse("quartos_disponiveis"), {
             "entrada": "2026-11-12", "saida": "2026-11-13"

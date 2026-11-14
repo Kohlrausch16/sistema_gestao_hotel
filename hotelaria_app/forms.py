@@ -4,7 +4,7 @@ from datetime import date
 
 from .disponibilidade import quartos_disponiveis
 from .precificacao import calcular_preco_total
-from .models import Cliente, Quarto, Reserva, Funcionario, Ocorrencia, TarifaSazonal, TipoQuarto
+from .models import Cliente, Quarto, Reserva, Funcionario, Ocorrencia, TarifaSazonal, TipoQuarto, Relatorio
 
 class ClienteForm(forms.ModelForm):
 
@@ -372,3 +372,16 @@ class TarifaSazonalForm(forms.ModelForm):
             },
             format="%Y-%m-%d"),
         }
+
+class CadastroForm(forms.ModelForm):
+    campos = forms.MultipleChoiceField(
+        choices=Relatorio.CAMPOS_CHOICE,
+        widget=forms.CheckboxSelectMultiple,
+        error_messages={
+            "required": "Selecione pelo menos um campo para gerar o relatório."
+        },
+    )
+
+    class Meta:
+        model = Relatorio
+        fields = ['campos']

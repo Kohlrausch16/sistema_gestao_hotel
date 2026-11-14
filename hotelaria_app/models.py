@@ -100,3 +100,18 @@ class Ocorrencia(models.Model):
 
     def __str__(self):
         return f"Ocorrência para a reserva {self.reserva.id} em {self.data_ocorrencia}"
+
+class Relatorio(models.Model):
+    CAMPOS_CHOICE = [
+        ('cliente', 'Cliente'),
+        ('quarto', 'Quarto'),
+        ('data_entrada', 'Data de Entrada'),
+        ('tipo_quarto', 'Tipo de Quarto'),
+        ('data_saida', 'Data de Saída'),
+        ('status', 'Status da Reserva'),
+    ]
+
+    campos = models.JSONField(default=list)
+
+    def __str__(self):
+        return f"Relatório com campos: {', '.join(self.campos)}"
