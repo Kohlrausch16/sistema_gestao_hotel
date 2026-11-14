@@ -7,8 +7,9 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 from django.db import transaction
+from django.db.models import Exists, OuterRef
 from .models import Cliente, Quarto, Reserva, TarifaSazonal, TipoQuarto
-from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis
+from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis, reservas_ativas_em
 from .precificacao import calcular_preco_total
 from .forms import ClienteForm, ReservaForm, TarifaSazonalForm, TipoQuartoForm
 from .forms import QuartoForm
@@ -66,10 +67,22 @@ def cadastrar_quarto(request):
 
 def listar_quartos(request):
     pesquisa = request.GET.get("q", "").strip()
-    quartos = Quarto.objects.select_related('tipo')
-    quartos = quartos.filter(ativo=True)
+    hoje = timezone.localdate()
+    quartos = Quarto.objects.select_related('tipo').filter(ativo=True).annotate(
+        ocupado_hoje=Exists(reservas_ativas_em(hoje).filter(quarto_id=OuterRef('pk')))
+    )
     if pesquisa:
         quartos = quartos.filter(numero__icontains=pesquisa)
+
+    quartos = list(quartos)
+    for quarto in quartos:
+        quarto.status_atual = (
+            'O' if quarto.ocupado_hoje and quarto.status != 'M' else quarto.status
+        )
+        quarto.status_atual_display = (
+            'Ocupado' if quarto.status_atual == 'O'
+            else quarto.get_status_display()
+        )
 
     dados = {
         "quartos": quartos,
@@ -91,13 +104,27 @@ def editar_quarto(request, quarto_id):
 
             return redirect('listar_quartos')
 
-    return render(request, "editar_quarto.html", {'formulario': form, 'quarto': quarto})
+    ocupado_hoje = (
+        quarto.status != 'M'
+        and reservas_ativas_em(timezone.localdate()).filter(quarto=quarto).exists()
+    )
+    return render(request, "editar_quarto.html", {
+        'formulario': form,
+        'quarto': quarto,
+        'ocupado_hoje': ocupado_hoje,
+    })
 
 @require_POST
 def excluir_quarto(request, quarto_id):
     quarto = Quarto.objects.get(id=quarto_id)
-    if quarto.status == 'O':
-        mensagem_erro = "Não é possível excluir um quarto ocupado"
+    possui_reserva = Reserva.objects.filter(
+        quarto=quarto,
+        ativo=True,
+        status='A',
+        data_saida__gt=timezone.localdate(),
+    ).exists()
+    if quarto.status == 'O' or possui_reserva:
+        mensagem_erro = "Não é possível excluir um quarto ocupado ou com reserva ativa futura."
         messages.error(request, mensagem_erro)
         return redirect('listar_quartos')
     
