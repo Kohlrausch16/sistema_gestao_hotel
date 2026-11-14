@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from .fields import BaseModel
 
 from django.contrib.auth.models import User
@@ -65,6 +66,7 @@ class TarifaSazonal(models.Model):
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     data_inicio = models.DateField()
     data_fim = models.DateField()
+    repetir_anualmente = models.BooleanField(default=False)
     ativo = models.BooleanField(default=True)
 
     def __str__(self):
@@ -74,7 +76,6 @@ class Quarto(models.Model):
     numero = models.CharField(max_length=10)
     tipo = models.ForeignKey(TipoQuarto, on_delete=models.PROTECT)
     capacidade = models.IntegerField(default=1)
-    preco_diaria = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=1, default='D', choices=STATUS_QUARTO_CHOICES)
     ativo = models.BooleanField(default=True)
 
@@ -89,6 +90,15 @@ class Reserva(models.Model):
     preco_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     ativo = models.BooleanField(default=True)
     status = models.CharField(max_length=1, default='A', choices=STATUS_RESERVA_CHOICES)
+
+    def clean(self):
+        super().clean()
+        if self.data_entrada and self.data_saida and self.data_saida <= self.data_entrada:
+            raise ValidationError({"data_saida": "A saída deve ser posterior à entrada."})
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Reserva de {self.cliente} no quarto {self.quarto} de {self.data_entrada} a {self.data_saida}"

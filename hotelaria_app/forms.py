@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from datetime import date
 
 from .disponibilidade import quartos_disponiveis
@@ -122,15 +123,13 @@ class QuartoForm(forms.ModelForm):
         fields = [
             "numero",
             "tipo",
-            "capacidade",
-            "preco_diaria"
+            "capacidade"
         ]
 
         labels = {
             "numero": "NUMERO",
             "tipo": "TIPO",
-            "capacidade": "CAPACIDADE",
-            "preco_diaria": "PREÇO DIÁRIO"
+            "capacidade": "CAPACIDADE"
         }
 
         widgets = {
@@ -147,13 +146,6 @@ class QuartoForm(forms.ModelForm):
                 "class": "campo-formulario placeholder-input input-capacidade",
                 "min": "1",
                 "step": "1"
-            }),
-
-            "preco_diaria": forms.NumberInput(attrs={
-                "class": "campo-formulario placeholder-input input-preco",
-                "placeholder": "100.00",
-                "min": "0",
-                "step": "0.01"
             })
         }
 
@@ -178,6 +170,9 @@ class EditarQuartoForm(QuartoForm):
 class ReservaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        hoje = timezone.localdate().isoformat()
+        self.fields["data_entrada"].widget.attrs["min"] = hoje
+        self.fields["data_saida"].widget.attrs["min"] = hoje
         self.fields["cliente"].label_from_instance = (
             lambda cliente: f"{cliente} — CPF: {cliente.cpf}"
         )
@@ -207,6 +202,11 @@ class ReservaForm(forms.ModelForm):
         dados = super().clean()
         entrada = dados.get("data_entrada")
         saida = dados.get("data_saida")
+        hoje = timezone.localdate()
+        if entrada and entrada < hoje:
+            self.add_error("data_entrada", "A entrada não pode ser anterior à data de hoje.")
+        if saida and saida < hoje:
+            self.add_error("data_saida", "A saída não pode ser anterior à data de hoje.")
         if entrada and saida and saida <= entrada:
             self.add_error("data_saida", "A saída deve ser posterior à entrada.")
         quarto = dados.get("quarto")
@@ -293,6 +293,7 @@ class TipoQuartoForm(forms.ModelForm):
                 f"{tarifa.descricao} · "
                 f"{tarifa.data_inicio:%d/%m/%Y} a {tarifa.data_fim:%d/%m/%Y} · "
                 f"R$ {tarifa.valor:.2f}"
+                f"{' · Repete anualmente' if tarifa.repetir_anualmente else ''}"
             )
         )
 
@@ -337,16 +338,19 @@ class TarifaSazonalForm(forms.ModelForm):
         fim = dados.get('data_fim')
         if inicio and fim and fim < inicio:
             self.add_error('data_fim', "O fim deve ser igual ou posterior ao início.")
+        if inicio and fim and dados.get('repetir_anualmente') and (fim - inicio).days >= 366:
+            self.add_error('data_fim', "O período anual deve durar menos de um ano.")
         return dados
 
     class Meta:
         model = TarifaSazonal
-        fields = ['descricao', 'valor', 'data_inicio', 'data_fim']
+        fields = ['descricao', 'valor', 'data_inicio', 'data_fim', 'repetir_anualmente']
         labels = {
             'descricao': 'DESCRIÇÃO',
             'valor': 'ADICIONAL POR DIÁRIA',
             'data_inicio': 'DATA DE INÍCIO',
-            'data_fim': 'DATA DE FIM'
+            'data_fim': 'DATA DE FIM',
+            'repetir_anualmente': 'REPETIR ANUALMENTE'
         }
         widgets = {
             'descricao': forms.TextInput(attrs={

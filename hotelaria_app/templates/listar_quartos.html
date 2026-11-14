@@ -44,7 +44,6 @@
                         <tr>
                             <th scope="col">Número</th>
                             <th scope="col">Tipo</th>
-                            <th scope="col">Preço da diária</th>
                             <th scope="col">Status</th>
                             <th scope="col">Ações</th>
                         </tr>
@@ -54,7 +53,6 @@
                             <tr>
                                 <td class="numero-quarto">{{ quarto.numero }}</td>
                                 <td>{{ quarto.tipo }}</td>
-                                <td>R$ {{ quarto.preco_diaria|floatformat:2 }}</td>
                                 <td>
                                     <span class="status-quarto status-{{ quarto.status_atual|lower }}">
                                         {{ quarto.status_atual_display }}

@@ -255,6 +255,15 @@
     font: 0.875rem "Inter", sans-serif;
 }
 
+.pesquisa-reservas select {
+    padding: 0.8rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 7px;
+    background: #FFFFFF;
+    color: #334155;
+    font: 0.875rem "Inter", sans-serif;
+}
+
 .pesquisa-quartos button {
     padding: 0.8rem 1rem;
     border: 0;
@@ -275,5 +284,18 @@
     .tabela-quartos th,
     .tabela-quartos td{
         padding: 1rem;
+    }
+
+    .pesquisa-reservas {
+        flex-wrap: wrap;
+    }
+
+    .pesquisa-reservas input {
+        flex-basis: 100%;
+    }
+
+    .pesquisa-reservas select {
+        flex: 1;
+        min-width: 0;
     }
 }

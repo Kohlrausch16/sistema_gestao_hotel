@@ -1,22 +1,25 @@
 from datetime import date
 
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q
+from django.db.models import Exists, OuterRef, Q, Value
+from django.db.models.functions import Concat, Lower
 from .models import Cliente, Quarto, Reserva, TarifaSazonal, TipoQuarto
 from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis, reservas_ativas_em
 from .precificacao import calcular_preco_total
+from .sazonalidade import periodo_para_exibir, proximidade_tarifa
 from .forms import ClienteForm, ReservaForm, TarifaSazonalForm, TipoQuartoForm
 from .forms import QuartoForm
 from .forms import EditarQuartoForm
 from django.contrib.auth.forms import UserCreationForm
 from .models import Funcionario
-from django.db.models.functions import Lower
 from .forms import CadastroForm, FuncionarioForm
 from .models import Ocorrencia, Relatorio
 
@@ -37,6 +40,11 @@ def listar_clientes(request):
 
 
 def cadastrar_cliente(request):
+    retorno = request.POST.get('next') or request.GET.get('next')
+    if not retorno or not url_has_allowed_host_and_scheme(
+        retorno, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        retorno = reverse('listagem_clientes')
     form = ClienteForm(request.POST or None)
 
     if request.method == "POST":
@@ -46,9 +54,12 @@ def cadastrar_cliente(request):
             mensagem_confirmacao = "Cliente cadastrado com sucesso!"
             messages.success(request, mensagem_confirmacao)
 
-            return redirect('listagem_clientes')
+            return redirect(retorno)
 
-    return render(request, "cadastrar_cliente.html", {'formulario': form})
+    return render(request, "cadastrar_cliente.html", {
+        'formulario': form,
+        'retorno_cliente': retorno,
+    })
 
 def cadastrar_quarto(request):
     form = QuartoForm(request.POST or None)
@@ -187,12 +198,35 @@ def quartos_disponiveis(request):
     })
 
 def listar_reservas(request):
-    reservas = Reserva.objects.all()
-    reservas = reservas.filter(ativo=True)
+    pesquisa = " ".join(request.GET.get("q", "").split())
+    filtro = request.GET.get("exibir", "sem_finalizadas")
+    status_por_filtro = {
+        "ativas": "A",
+        "em_andamento": "E",
+        "canceladas": "C",
+        "finalizadas": "F",
+    }
+    if filtro not in ("sem_finalizadas", "todas", *status_por_filtro):
+        filtro = "sem_finalizadas"
+    reservas = Reserva.objects.filter(ativo=True).select_related('cliente', 'quarto')
+    if filtro == "sem_finalizadas":
+        reservas = reservas.exclude(status='F')
+    elif filtro in status_por_filtro:
+        reservas = reservas.filter(status=status_por_filtro[filtro])
+    if pesquisa:
+        reservas = reservas.annotate(
+            nome_completo_busca=Concat('cliente__nome', Value(' '), 'cliente__sobrenome')
+        ).filter(
+            Q(nome_completo_busca__icontains=pesquisa)
+            | Q(quarto__numero__icontains=pesquisa)
+        )
     reservas = reservas.order_by('data_entrada')
 
     dados = {
         "reservas": reservas,
+        "pesquisa": pesquisa,
+        "filtro": filtro,
+        "ha_reservas": Reserva.objects.filter(ativo=True).exists(),
         "hoje": timezone.localdate(),
     }
 
@@ -549,9 +583,17 @@ def criar_tarifa_sazonal(request):
     return render(request, 'criar_tarifa_sazonal.html', {'formulario': formulario})
 
 def listar_tarifas_sazonais(request):
-    tarifas_sazonais = TarifaSazonal.objects.filter(ativo=True).order_by('data_inicio', 'descricao')
+    pesquisa = request.GET.get('q', '').strip()
+    tarifas_sazonais = TarifaSazonal.objects.filter(ativo=True)
+    if pesquisa:
+        tarifas_sazonais = tarifas_sazonais.filter(descricao__icontains=pesquisa)
+    hoje = timezone.localdate()
+    tarifas_sazonais = sorted(tarifas_sazonais, key=lambda tarifa: proximidade_tarifa(tarifa, hoje))
+    for tarifa in tarifas_sazonais:
+        tarifa.inicio_exibicao, tarifa.fim_exibicao = periodo_para_exibir(tarifa, hoje)
     return render(request, 'listar_tarifas_sazonais.html', {
         'tarifas_sazonais': tarifas_sazonais,
+        'pesquisa': pesquisa,
     })
 
 def editar_tarifa_sazonal(request, tarifa_id):

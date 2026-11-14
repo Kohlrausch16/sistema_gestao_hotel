@@ -4,7 +4,7 @@
 {% block title %}Reservas{% endblock %}
 
 {% block arquivos_css %}
-    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}?v=4">
 {% endblock %}
 
 {% block titulo_pagina %}
@@ -26,6 +26,24 @@
 {% endblock %}
 
 {% block main %}
+    <form class="pesquisa-quartos pesquisa-reservas" method="get" action="{% url 'listar_reservas' %}">
+        <input
+            type="search"
+            name="q"
+            value="{{ pesquisa }}"
+            placeholder="Buscar por nome do cliente ou número do quarto"
+            aria-label="Buscar por nome do cliente ou número do quarto"
+        >
+        <select name="exibir" aria-label="Exibir reservas">
+            <option value="sem_finalizadas" {% if filtro == 'sem_finalizadas' %}selected{% endif %}>Sem finalizadas</option>
+            <option value="todas" {% if filtro == 'todas' %}selected{% endif %}>Todas</option>
+            <option value="ativas" {% if filtro == 'ativas' %}selected{% endif %}>Ativas</option>
+            <option value="em_andamento" {% if filtro == 'em_andamento' %}selected{% endif %}>Em andamento</option>
+            <option value="canceladas" {% if filtro == 'canceladas' %}selected{% endif %}>Canceladas</option>
+            <option value="finalizadas" {% if filtro == 'finalizadas' %}selected{% endif %}>Finalizadas</option>
+        </select>
+        <button type="submit">Buscar</button>
+    </form>
     <section class="painel-quartos" aria-label="Lista de reservas">
         <div class="painel-cabecalho">
             <h2>Reservas cadastradas</h2>
@@ -91,9 +109,15 @@
         {% else %}
             <div class="lista-vazia">
                 <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
-                <h3>Nenhuma reserva cadastrada</h3>
-                <p>Crie a primeira reserva para vê-la nesta lista.</p>
-                <a href="{% url 'criar_reserva' %}">Criar reserva</a>
+                {% if pesquisa or ha_reservas %}
+                    <h3>Nenhuma reserva encontrada</h3>
+                    <p>Altere a pesquisa ou o filtro para consultar outras reservas.</p>
+                    <a href="{% url 'listar_reservas' %}">Limpar filtros</a>
+                {% else %}
+                    <h3>Nenhuma reserva cadastrada</h3>
+                    <p>Crie a primeira reserva para vê-la nesta lista.</p>
+                    <a href="{% url 'criar_reserva' %}">Criar reserva</a>
+                {% endif %}
             </div>
         {% endif %}
     </section>

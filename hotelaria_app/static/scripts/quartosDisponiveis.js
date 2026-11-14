@@ -2,13 +2,31 @@ const entrada = document.getElementById("id_data_entrada");
 const saida = document.getElementById("id_data_saida");
 const quarto = document.getElementById("id_quarto");
 const mensagem = document.getElementById("mensagem-disponibilidade");
+const avisoEntrada = document.getElementById("aviso-data-entrada");
+const avisoSaida = document.getElementById("aviso-data-saida");
 const url = document.querySelector("[data-disponibilidade-url]")?.dataset.disponibilidadeUrl;
 const reservaId = document.querySelector("[data-reserva-id]")?.dataset.reservaId;
 
-if (entrada && saida && quarto && mensagem && url) {
+if (entrada && saida && quarto && mensagem && avisoEntrada && avisoSaida && url) {
     let consultaAtual;
     let quartosDisponiveis = [];
+    let quartoSelecionado = quarto.value;
     const moeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+
+    function validarDatas() {
+        const entradaPassada = Boolean(entrada.value && entrada.min && entrada.value < entrada.min);
+        const saidaPassada = Boolean(saida.value && saida.min && saida.value < saida.min);
+        const ordemInvalida = Boolean(entrada.value && saida.value && saida.value <= entrada.value);
+
+        avisoEntrada.textContent = entradaPassada
+            ? "A entrada não pode ser anterior à data de hoje."
+            : "";
+        avisoSaida.textContent = saidaPassada
+            ? "A saída não pode ser anterior à data de hoje."
+            : ordemInvalida ? "A saída deve ser posterior à entrada." : "";
+
+        return !entradaPassada && !saidaPassada && !ordemInvalida;
+    }
 
     function mostrarPrecoSelecionado() {
         const selecionado = quartosDisponiveis.find((item) => String(item.id) === quarto.value);
@@ -18,8 +36,8 @@ if (entrada && saida && quarto && mensagem && url) {
     }
 
     async function atualizarQuartos() {
-        const selecaoAnterior = quarto.value || quarto.dataset.selecaoInicial || "";
-        delete quarto.dataset.selecaoInicial;
+        const datasValidas = validarDatas();
+        const selecaoAnterior = quarto.value || quartoSelecionado;
         consultaAtual?.abort();
         quarto.replaceChildren(new Option("Selecione as datas primeiro", ""));
         quarto.disabled = true;
@@ -30,8 +48,8 @@ if (entrada && saida && quarto && mensagem && url) {
             return;
         }
 
-        if (saida.value <= entrada.value) {
-            mensagem.textContent = "A saída deve ser posterior à entrada.";
+        if (!datasValidas) {
+            mensagem.textContent = "Corrija as datas para ver os quartos disponíveis.";
             return;
         }
 
@@ -59,6 +77,9 @@ if (entrada && saida && quarto && mensagem && url) {
             }
             if (dados.quartos.some((disponivel) => String(disponivel.id) === selecaoAnterior)) {
                 quarto.value = selecaoAnterior;
+                quartoSelecionado = selecaoAnterior;
+            } else {
+                quartoSelecionado = "";
             }
             quarto.disabled = dados.quartos.length === 0;
             if (dados.quartos.length) {
@@ -73,9 +94,13 @@ if (entrada && saida && quarto && mensagem && url) {
         }
     }
 
-    quarto.dataset.selecaoInicial = quarto.value;
+    entrada.addEventListener("input", validarDatas);
+    saida.addEventListener("input", validarDatas);
     entrada.addEventListener("change", atualizarQuartos);
     saida.addEventListener("change", atualizarQuartos);
-    quarto.addEventListener("change", mostrarPrecoSelecionado);
+    quarto.addEventListener("change", () => {
+        quartoSelecionado = quarto.value;
+        mostrarPrecoSelecionado();
+    });
     atualizarQuartos();
 }
