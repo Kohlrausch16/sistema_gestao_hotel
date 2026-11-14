@@ -26,4 +26,6 @@ urlpatterns = [
     path('ocorrencias/<int:ocorrencia_id>/concluir/', views.concluir_ocorrencia, name='concluir_ocorrencia'),
     path('ocorrencias/concluidas/', views.ocorrencias_concluidas, name='ocorrencias_concluidas'),
     path('ocorrencias/<int:ocorrencia_id>/reabrir/', views.reabrir_ocorrencia, name='reabrir_ocorrencia'),
-    path('ocorrencias/<int:ocorrencia_id>/', views.visualizar_ocorrencia, name='visualizar_ocorrencia'),]
+    path('ocorrencias/<int:ocorrencia_id>/', views.visualizar_ocorrencia, name='visualizar_ocorrencia'),
+    path('relatorio/', views.gerar_relatorio, name='gerar_relatorio'),
+    ]

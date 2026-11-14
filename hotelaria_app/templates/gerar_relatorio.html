@@ -1,0 +1,70 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Gerar relatório{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}">
+{% endblock %}
+
+{% block titulo_pagina %}
+    {% if not modo_impressao %}
+        <a class="botao-retornar item-navegacao" href="{% url 'gerar_relatorio' %}">Voltar</a>
+        <h1 class="titulo-pagina">GERAR RELATÓRIO</h1>
+    {% endif %}
+{% endblock %}
+
+{% block main %}
+    {% if modo_impressao %}
+        <section class="relatorio-impressao">
+            <h1 class="titulo-pagina">RELATÓRIO DE RESERVAS</h1>
+            <div class="tabela-relatorio-rolagem">
+                <table class="tabela-relatorio">
+                    <thead>
+                        <tr>
+                            {% for cabecalho in cabecalhos %}
+                                <th scope="col">{{ cabecalho }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for linha in linhas %}
+                            <tr>
+                                {% for valor in linha %}
+                                    <td>{{ valor }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="{{ cabecalhos|length }}">Nenhuma reserva cadastrada.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <button class="botao-formulario botao-confirmar botao-imprimir" type="button" onclick="window.print()">
+                <i class="fa-solid fa-print" aria-hidden="true"></i> IMPRIMIR / SALVAR PDF
+            </button>
+        </section>
+    {% else %}
+        <form class="formulario-relatorio" method="post" action="{% url 'gerar_relatorio' %}" target="_blank">
+            {% csrf_token %}
+            <p>Marque os campos que deseja incluir no relatório:</p>
+            {{ formulario.as_p }}
+            <div class="container-botoes">
+                <a class="botao-formulario botao-cancelar" href="{% url 'listar_reservas' %}">CANCELAR</a>
+                <button class="botao-formulario botao-confirmar" type="submit">
+                    <i class="fa-solid fa-print" aria-hidden="true"></i> GERAR PDF
+                </button>
+            </div>
+        </form>
+    {% endif %}
+{% endblock %}
+
+{% block arquivos_js %}
+    {% if modo_impressao %}
+        <script>
+            window.addEventListener("load", () => window.print());
+        </script>
+    {% endif %}
+{% endblock %}

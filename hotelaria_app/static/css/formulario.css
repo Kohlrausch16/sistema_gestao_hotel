@@ -385,6 +385,134 @@ label{
 	color: #166534;
 }
 
+.formulario-relatorio {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	max-width: 760px;
+}
+
+.formulario-relatorio fieldset {
+	border: 0;
+	margin: 0;
+	padding: 0;
+}
+
+.formulario-relatorio legend {
+	color: #0F172A;
+	font-family: "Inter", sans-serif;
+	font-size: 1rem;
+	font-weight: 700;
+	margin-bottom: 0.8rem;
+}
+
+.opcoes-relatorio {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.opcao-relatorio {
+	align-items: center;
+	background-color: #FFFFFF;
+	border: 1px solid #CBD5E1;
+	border-radius: 5px;
+	box-sizing: border-box;
+	cursor: pointer;
+	display: flex;
+	gap: 0.65rem;
+	margin: 0;
+	min-height: 2.75rem;
+	padding: 0.65rem 0.8rem;
+}
+
+.opcao-relatorio input {
+	accent-color: #0F172A;
+	height: 1rem;
+	margin: 0;
+	width: 1rem;
+}
+
+.erro-relatorio {
+	color: #B91C1C;
+	font-family: "Inter", sans-serif;
+	font-size: 0.85rem;
+	margin-top: 0.6rem;
+}
+
+.formulario-relatorio .container-botoes {
+	justify-content: flex-end;
+}
+
+.data-relatorio {
+	color: #475569;
+	font-family: "Inter", sans-serif;
+	margin: 0 0 1rem;
+}
+
+.tabela-relatorio-rolagem {
+	overflow-x: auto;
+	width: 100%;
+}
+
+.tabela-relatorio {
+	border-collapse: collapse;
+	width: 100%;
+}
+
+.tabela-relatorio th,
+.tabela-relatorio td {
+	border: 1px solid #CBD5E1;
+	color: #0F172A;
+	font-family: "Inter", sans-serif;
+	font-size: 0.9rem;
+	padding: 0.75rem;
+	text-align: left;
+}
+
+.tabela-relatorio th {
+	background-color: #F1F5F9;
+	font-weight: 700;
+}
+
+.botao-imprimir {
+	margin-top: 1rem;
+}
+
+@media print {
+	@page {
+		size: landscape;
+		margin: 12mm;
+	}
+
+	header,
+	aside,
+	.botao-retornar,
+	.botao-imprimir {
+		display: none !important;
+	}
+
+	body,
+	main,
+	.container {
+		background: #FFFFFF !important;
+		color: #000000;
+		display: block;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+	}
+
+	.tabela-relatorio-rolagem {
+		overflow: visible;
+	}
+
+	.tabela-relatorio th {
+		background-color: #E2E8F0 !important;
+		print-color-adjust: exact;
+	}
+}
+
 @media (max-width: 800px) {
 	.funcionario-formulario-pesquisa {
 		grid-template-columns: minmax(0, 1fr);

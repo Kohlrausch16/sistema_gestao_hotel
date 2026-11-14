@@ -14,8 +14,8 @@ from .forms import EditarQuartoForm
 from django.contrib.auth.forms import UserCreationForm
 from .models import Funcionario
 from django.db.models.functions import Lower
-from .forms import FuncionarioForm
-from .models import Ocorrencia
+from .forms import CadastroForm, FuncionarioForm
+from .models import Ocorrencia, Relatorio
 
 
 def index(request):
@@ -437,3 +437,37 @@ def visualizar_ocorrencia(request, ocorrencia_id):
             'ocorrencia': ocorrencia
     }
     return render(request, 'visualizar_ocorrencia.html', dados)
+
+def gerar_relatorio(request):
+    formulario = CadastroForm(
+        request.POST if request.method == 'POST' else None
+    )
+
+    if request.method == 'POST' and formulario.is_valid():
+        campos_selecionados = formulario.cleaned_data['campos']
+        nomes_campos = dict(Relatorio.CAMPOS_CHOICE)
+        reservas = Reserva.objects.filter(ativo=True).select_related(
+            'cliente', 'quarto'
+        ).order_by('data_entrada')
+        valores_por_reserva = []
+
+        for reserva in reservas:
+            valores = {
+                'cliente': str(reserva.cliente),
+                'quarto': reserva.quarto.numero,
+                'data_entrada': reserva.data_entrada.strftime('%d/%m/%Y'),
+                'tipo_quarto': reserva.quarto.get_tipo_display(),
+                'data_saida': reserva.data_saida.strftime('%d/%m/%Y'),
+                'status': reserva.get_status_display(),
+            }
+            valores_por_reserva.append([
+                valores[campo] for campo in campos_selecionados
+            ])
+
+        return render(request, 'gerar_relatorio.html', {
+            'modo_impressao': True,
+            'cabecalhos': [nomes_campos[campo] for campo in campos_selecionados],
+            'linhas': valores_por_reserva,
+        })
+
+    return render(request, 'gerar_relatorio.html', {'formulario': formulario})

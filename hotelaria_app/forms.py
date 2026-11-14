@@ -2,7 +2,7 @@ from django import forms
 from datetime import date
 
 from .disponibilidade import quartos_disponiveis
-from .models import Cliente, Quarto, Reserva, Funcionario, Ocorrencia
+from .models import Cliente, Quarto, Reserva, Funcionario, Ocorrencia, Relatorio
 
 class ClienteForm(forms.ModelForm):
 
@@ -263,3 +263,16 @@ class OcorrenciaForm(forms.ModelForm):
                 "placeholder": "Descreva a ocorrência aqui..."
             }),
         }
+
+class CadastroForm(forms.ModelForm):
+    campos = forms.MultipleChoiceField(
+        choices=Relatorio.CAMPOS_CHOICE,
+        widget=forms.CheckboxSelectMultiple,
+        error_messages={
+            "required": "Selecione pelo menos um campo para gerar o relatório."
+        },
+    )
+
+    class Meta:
+        model = Relatorio
+        fields = ['campos']
