@@ -15,6 +15,7 @@ STATUS_RESERVA_CHOICES = [
     ('A', 'Ativa'),
     ('C', 'Cancelada'),
     ('F', 'Finalizada'),
+    ('E', 'Em andamento')
 ]
 
 class Cliente(BaseModel):

@@ -14,9 +14,14 @@
             <h1 class="titulo-pagina">RESERVAS</h1>
             <p class="subtitulo-quartos">Consulte as reservas cadastradas no hotel.</p>
         </div>
-        <a class="botao-novo-quarto" href="{% url 'criar_reserva' %}">
-            <i class="fa-solid fa-plus" aria-hidden="true"></i> Criar reserva
-        </a>
+        <div class="acoes-quarto">
+            <a class="botao-novo-quarto" href="{% url 'criar_reserva' %}">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Criar reserva
+            </a>
+            <a class="botao-novo-quarto" href="{% url 'checkin_page' %}">
+                <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Check-in
+            </a>
+        </div>
     </div>
 {% endblock %}
 
@@ -55,8 +60,17 @@
                                     </span>
                                 </td>
                                 <td>
-                                    {% if reserva.status == 'A' and reserva.data_entrada > hoje %}
-                                        <div class="acoes-quarto">
+                                    <div class="acoes-quarto">
+                                        {% if reserva.status == 'E' %}
+                                            <form action="{% url 'checkout' reserva.id %}" method="post" class="form-excluir-quarto">
+                                                {% csrf_token %}
+                                                <button type="submit" class="botao-checkout" aria-label="Fazer check-out da reserva de {{ reserva.cliente }} no quarto {{ reserva.quarto.numero }}" title="Check-out">
+                                                    CHECKOUT
+                                                </button>
+                                            </form>
+                                        {% endif %}
+
+                                        {% if reserva.status == 'A' and reserva.data_entrada > hoje %}
                                             <a href="{% url 'editar_reserva' reserva.id %}" class="botao-editar" aria-label="Editar reserva de {{ reserva.cliente }} no quarto {{ reserva.quarto.numero }}" title="Editar reserva">
                                                 <i class="fa-solid fa-pen" aria-hidden="true"></i>
                                             </a>
@@ -66,8 +80,8 @@
                                                     <i class="fa-solid fa-ban" aria-hidden="true"></i>
                                                 </button>
                                             </form>
-                                        </div>
-                                    {% endif %}
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}

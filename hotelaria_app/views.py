@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 from django.db import transaction
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
 from .models import Cliente, Quarto, Reserva, TarifaSazonal, TipoQuarto
 from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis, reservas_ativas_em
 from .precificacao import calcular_preco_total
@@ -198,6 +198,26 @@ def listar_reservas(request):
     }
 
     return render(request, "listar_reservas.html", dados)
+
+
+def checkin_page(request):
+    pesquisa = request.GET.get("q", "").strip()
+    reservas = Reserva.objects.filter(ativo=True, status='A').select_related('cliente', 'quarto', 'quarto__tipo')
+
+    if pesquisa:
+        reservas = reservas.filter(
+            Q(cliente__nome__icontains=pesquisa)
+            | Q(cliente__sobrenome__icontains=pesquisa)
+            | Q(quarto__numero__icontains=pesquisa)
+        )
+
+    dados = {
+        "reservas": reservas.order_by('data_entrada'),
+        "pesquisa": pesquisa,
+        "hoje": timezone.localdate(),
+    }
+
+    return render(request, "checkin.html", dados)
 
 def editar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id, ativo=True)
@@ -600,3 +620,29 @@ def gerar_relatorio(request):
         })
 
     return render(request, 'gerar_relatorio.html', {'formulario': formulario})
+
+def checkin(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id, ativo=True)
+    if reserva.status != 'A':
+        messages.error(request, "Apenas reservas ativas podem fazer check-in.")
+        return redirect('listar_reservas')
+
+    if reserva.data_entrada > timezone.localdate():
+        messages.error(request, "O check-in só pode ser feito na data de entrada ou depois.")
+        return redirect('listar_reservas')
+
+    reserva.status = 'E'
+    reserva.save(update_fields=['status'])
+    messages.success(request, "Check-in realizado com sucesso!")
+    return redirect('listar_reservas')
+
+def checkout(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id, ativo=True)
+    if reserva.status != 'E':
+        messages.error(request, "Apenas reservas em andamento podem fazer check-out.")
+        return redirect('listar_reservas')
+
+    reserva.status = 'F'
+    reserva.save(update_fields=['status'])
+    messages.success(request, "Check-out realizado com sucesso!")
+    return redirect('listar_reservas')
