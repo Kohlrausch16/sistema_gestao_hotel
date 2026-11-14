@@ -21,6 +21,10 @@
 {% endblock %}
 
 {% block main %}
+    <form class="pesquisa-quartos" method="get">
+        <input type="search" name="q" value="{{ pesquisa }}" placeholder="Pesquisar descrição da tarifa" aria-label="Pesquisar descrição da tarifa">
+        <button type="submit">Pesquisar</button>
+    </form>
     <section class="painel-quartos" aria-label="Lista de tarifas sazonais">
         <div class="painel-cabecalho">
             <h2>Tarifas cadastradas</h2>
@@ -36,6 +40,7 @@
                             <th scope="col">Adicional por diária</th>
                             <th scope="col">Início</th>
                             <th scope="col">Fim</th>
+                            <th scope="col">Repetição</th>
                             <th scope="col">Ações</th>
                         </tr>
                     </thead>
@@ -44,8 +49,9 @@
                             <tr>
                                 <td class="numero-quarto">{{ tarifa_sazonal.descricao }}</td>
                                 <td>R$ {{ tarifa_sazonal.valor|floatformat:2 }}</td>
-                                <td>{{ tarifa_sazonal.data_inicio|date:"d/m/Y" }}</td>
-                                <td>{{ tarifa_sazonal.data_fim|date:"d/m/Y" }}</td>
+                                <td>{{ tarifa_sazonal.inicio_exibicao|date:"d/m/Y" }}</td>
+                                <td>{{ tarifa_sazonal.fim_exibicao|date:"d/m/Y" }}</td>
+                                <td>{% if tarifa_sazonal.repetir_anualmente %}Anual{% else %}Não repete{% endif %}</td>
                                 <td>
                                     <div class="acoes-quarto">
                                     <a href="{% url 'editar_tarifa_sazonal' tarifa_sazonal.id %}" class="botao-editar" aria-label="Editar tarifa {{ tarifa_sazonal.descricao }}" title="Editar tarifa">
@@ -67,9 +73,15 @@
         {% else %}
             <div class="lista-vazia">
                 <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
-                <h3>Nenhuma tarifa sazonal cadastrada</h3>
-                <p>Cadastre a primeira tarifa para vê-la nesta lista.</p>
-                <a href="{% url 'criar_tarifa_sazonal' %}">Cadastrar tarifa</a>
+                {% if pesquisa %}
+                    <h3>Nenhuma tarifa encontrada</h3>
+                    <p>Experimente pesquisar por outra descrição.</p>
+                    <a href="{% url 'listar_tarifas_sazonais' %}">Limpar pesquisa</a>
+                {% else %}
+                    <h3>Nenhuma tarifa sazonal cadastrada</h3>
+                    <p>Cadastre a primeira tarifa para vê-la nesta lista.</p>
+                    <a href="{% url 'criar_tarifa_sazonal' %}">Cadastrar tarifa</a>
+                {% endif %}
             </div>
         {% endif %}
     </section>

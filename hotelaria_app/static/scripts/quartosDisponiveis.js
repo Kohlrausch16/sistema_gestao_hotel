@@ -10,6 +10,16 @@ if (entrada && saida && quarto && mensagem && url) {
     let quartosDisponiveis = [];
     const moeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
+    function atualizarDataMinimaSaida() {
+        if (!entrada.value) {
+            saida.removeAttribute("min");
+            return;
+        }
+        const proximoDia = new Date(`${entrada.value}T00:00:00Z`);
+        proximoDia.setUTCDate(proximoDia.getUTCDate() + 1);
+        saida.min = proximoDia.toISOString().slice(0, 10);
+    }
+
     function mostrarPrecoSelecionado() {
         const selecionado = quartosDisponiveis.find((item) => String(item.id) === quarto.value);
         mensagem.textContent = selecionado
@@ -18,6 +28,7 @@ if (entrada && saida && quarto && mensagem && url) {
     }
 
     async function atualizarQuartos() {
+        atualizarDataMinimaSaida();
         const selecaoAnterior = quarto.value || quarto.dataset.selecaoInicial || "";
         delete quarto.dataset.selecaoInicial;
         consultaAtual?.abort();

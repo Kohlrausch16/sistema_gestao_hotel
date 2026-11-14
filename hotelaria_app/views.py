@@ -11,6 +11,7 @@ from django.db.models import Exists, OuterRef
 from .models import Cliente, Quarto, Reserva, TarifaSazonal, TipoQuarto
 from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis, reservas_ativas_em
 from .precificacao import calcular_preco_total
+from .sazonalidade import periodo_para_exibir, proximidade_tarifa
 from .forms import ClienteForm, ReservaForm, TarifaSazonalForm, TipoQuartoForm
 from .forms import QuartoForm
 from .forms import EditarQuartoForm
@@ -529,9 +530,17 @@ def criar_tarifa_sazonal(request):
     return render(request, 'criar_tarifa_sazonal.html', {'formulario': formulario})
 
 def listar_tarifas_sazonais(request):
-    tarifas_sazonais = TarifaSazonal.objects.filter(ativo=True).order_by('data_inicio', 'descricao')
+    pesquisa = request.GET.get('q', '').strip()
+    tarifas_sazonais = TarifaSazonal.objects.filter(ativo=True)
+    if pesquisa:
+        tarifas_sazonais = tarifas_sazonais.filter(descricao__icontains=pesquisa)
+    hoje = timezone.localdate()
+    tarifas_sazonais = sorted(tarifas_sazonais, key=lambda tarifa: proximidade_tarifa(tarifa, hoje))
+    for tarifa in tarifas_sazonais:
+        tarifa.inicio_exibicao, tarifa.fim_exibicao = periodo_para_exibir(tarifa, hoje)
     return render(request, 'listar_tarifas_sazonais.html', {
         'tarifas_sazonais': tarifas_sazonais,
+        'pesquisa': pesquisa,
     })
 
 def editar_tarifa_sazonal(request, tarifa_id):
