@@ -91,6 +91,38 @@ class DisponibilidadeQuartosTests(TestCase):
         self.assertContains(resposta, "Simples")
         self.assertContains(resposta, "101")
 
+    def test_busca_reservas_por_nome_completo_ou_numero_do_quarto(self):
+        outro_cliente = Cliente.objects.create(
+            nome="Bruno", sobrenome="Costa", cpf="98765432100",
+            data_nascimento=date(1985, 5, 1), email="bruno@example.com",
+            telefone="11988888888",
+        )
+        outra_reserva = Reserva.objects.create(
+            cliente=outro_cliente, quarto=self.livre,
+            data_entrada=date(2026, 11, 14), data_saida=date(2026, 11, 15),
+        )
+        primeira_reserva = Reserva.objects.get(quarto=self.ocupado)
+        url = reverse("listar_reservas")
+
+        por_nome = self.client.get(url, {"q": "  aNa   sIlVa  "})
+        self.assertEqual(
+            [reserva.id for reserva in por_nome.context["reservas"]],
+            [primeira_reserva.id],
+        )
+        self.assertContains(por_nome, 'value="aNa sIlVa"')
+
+        por_sobrenome = self.client.get(url, {"q": "costa"})
+        por_quarto = self.client.get(url, {"q": "102"})
+        for resposta in (por_sobrenome, por_quarto):
+            self.assertEqual(
+                [reserva.id for reserva in resposta.context["reservas"]],
+                [outra_reserva.id],
+            )
+
+        sem_resultado = self.client.get(url, {"q": "inexistente"})
+        self.assertContains(sem_resultado, "Nenhuma reserva encontrada")
+        self.assertContains(sem_resultado, "Limpar pesquisa")
+
     def test_saida_e_entrada_no_mesmo_dia_nao_conflitam(self):
         resposta = self.client.get(reverse("quartos_disponiveis"), {
             "entrada": "2026-11-12", "saida": "2026-11-13"

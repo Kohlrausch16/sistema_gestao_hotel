@@ -9,7 +9,8 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q
+from django.db.models import Exists, OuterRef, Q, Value
+from django.db.models.functions import Concat, Lower
 from .models import Cliente, Quarto, Reserva, TarifaSazonal, TipoQuarto
 from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis, reservas_ativas_em
 from .precificacao import calcular_preco_total
@@ -19,7 +20,6 @@ from .forms import QuartoForm
 from .forms import EditarQuartoForm
 from django.contrib.auth.forms import UserCreationForm
 from .models import Funcionario
-from django.db.models.functions import Lower
 from .forms import CadastroForm, FuncionarioForm
 from .models import Ocorrencia, Relatorio
 
@@ -198,12 +198,20 @@ def quartos_disponiveis(request):
     })
 
 def listar_reservas(request):
-    reservas = Reserva.objects.all()
-    reservas = reservas.filter(ativo=True)
+    pesquisa = " ".join(request.GET.get("q", "").split())
+    reservas = Reserva.objects.filter(ativo=True).select_related('cliente', 'quarto')
+    if pesquisa:
+        reservas = reservas.annotate(
+            nome_completo_busca=Concat('cliente__nome', Value(' '), 'cliente__sobrenome')
+        ).filter(
+            Q(nome_completo_busca__icontains=pesquisa)
+            | Q(quarto__numero__icontains=pesquisa)
+        )
     reservas = reservas.order_by('data_entrada')
 
     dados = {
         "reservas": reservas,
+        "pesquisa": pesquisa,
         "hoje": timezone.localdate(),
     }
 
