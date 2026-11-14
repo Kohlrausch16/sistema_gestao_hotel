@@ -136,6 +136,12 @@ label{
     min-width: 0;
 }
 
+.aviso-data-reserva:not(:empty){
+    margin-top: 0.35rem;
+    color: #B91C1C;
+    font: 0.8rem "Inter", sans-serif;
+}
+
 .formulario-reserva .campo-formulario,
 .formulario-reserva .botao-formulario{
     box-sizing: border-box;

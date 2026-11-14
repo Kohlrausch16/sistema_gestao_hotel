@@ -145,6 +145,8 @@ class DisponibilidadeQuartosTests(TestCase):
         with patch("hotelaria_app.forms.timezone.localdate", return_value=date(2026, 11, 14)):
             pagina = self.client.get(url)
             self.assertContains(pagina, 'min="2026-11-14"', count=2)
+            self.assertContains(pagina, 'id="aviso-data-entrada"')
+            self.assertContains(pagina, 'id="aviso-data-saida"')
 
             dados = {
                 "cliente": self.cliente.id,
