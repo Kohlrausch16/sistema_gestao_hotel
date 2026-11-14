@@ -162,6 +162,7 @@ def quartos_disponiveis(request):
 def listar_reservas(request):
     reservas = Reserva.objects.all()
     reservas = reservas.filter(ativo=True)
+    reservas = reservas.order_by('data_entrada')
 
     dados = {
         "reservas": reservas,
