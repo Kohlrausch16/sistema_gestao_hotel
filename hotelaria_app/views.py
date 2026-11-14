@@ -199,7 +199,14 @@ def quartos_disponiveis(request):
 
 def listar_reservas(request):
     pesquisa = " ".join(request.GET.get("q", "").split())
+    filtro = request.GET.get("exibir", "sem_finalizadas")
+    if filtro not in ("sem_finalizadas", "todas", "finalizadas"):
+        filtro = "sem_finalizadas"
     reservas = Reserva.objects.filter(ativo=True).select_related('cliente', 'quarto')
+    if filtro == "sem_finalizadas":
+        reservas = reservas.exclude(status='F')
+    elif filtro == "finalizadas":
+        reservas = reservas.filter(status='F')
     if pesquisa:
         reservas = reservas.annotate(
             nome_completo_busca=Concat('cliente__nome', Value(' '), 'cliente__sobrenome')
@@ -212,6 +219,8 @@ def listar_reservas(request):
     dados = {
         "reservas": reservas,
         "pesquisa": pesquisa,
+        "filtro": filtro,
+        "ha_reservas": Reserva.objects.filter(ativo=True).exists(),
         "hoje": timezone.localdate(),
     }
 

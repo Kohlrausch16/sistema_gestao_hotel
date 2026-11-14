@@ -4,7 +4,7 @@
 {% block title %}Reservas{% endblock %}
 
 {% block arquivos_css %}
-    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}?v=4">
 {% endblock %}
 
 {% block titulo_pagina %}
@@ -26,7 +26,7 @@
 {% endblock %}
 
 {% block main %}
-    <form class="pesquisa-quartos" method="get" action="{% url 'listar_reservas' %}">
+    <form class="pesquisa-quartos pesquisa-reservas" method="get" action="{% url 'listar_reservas' %}">
         <input
             type="search"
             name="q"
@@ -34,6 +34,11 @@
             placeholder="Buscar por nome do cliente ou número do quarto"
             aria-label="Buscar por nome do cliente ou número do quarto"
         >
+        <select name="exibir" aria-label="Exibir reservas">
+            <option value="sem_finalizadas" {% if filtro == 'sem_finalizadas' %}selected{% endif %}>Sem finalizadas</option>
+            <option value="todas" {% if filtro == 'todas' %}selected{% endif %}>Todas</option>
+            <option value="finalizadas" {% if filtro == 'finalizadas' %}selected{% endif %}>Somente finalizadas</option>
+        </select>
         <button type="submit">Buscar</button>
     </form>
     <section class="painel-quartos" aria-label="Lista de reservas">
@@ -101,10 +106,10 @@
         {% else %}
             <div class="lista-vazia">
                 <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
-                {% if pesquisa %}
+                {% if pesquisa or ha_reservas %}
                     <h3>Nenhuma reserva encontrada</h3>
-                    <p>Busque por outro nome ou número de quarto.</p>
-                    <a href="{% url 'listar_reservas' %}">Limpar pesquisa</a>
+                    <p>Altere a pesquisa ou o filtro para consultar outras reservas.</p>
+                    <a href="{% url 'listar_reservas' %}">Limpar filtros</a>
                 {% else %}
                     <h3>Nenhuma reserva cadastrada</h3>
                     <p>Crie a primeira reserva para vê-la nesta lista.</p>

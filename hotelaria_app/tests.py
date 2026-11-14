@@ -121,7 +121,42 @@ class DisponibilidadeQuartosTests(TestCase):
 
         sem_resultado = self.client.get(url, {"q": "inexistente"})
         self.assertContains(sem_resultado, "Nenhuma reserva encontrada")
-        self.assertContains(sem_resultado, "Limpar pesquisa")
+        self.assertContains(sem_resultado, "Limpar filtros")
+
+    def test_filtro_oculta_finalizadas_e_combina_com_busca(self):
+        finalizada = Reserva.objects.get(quarto=self.ocupado)
+        finalizada.status = "F"
+        finalizada.save(update_fields=["status"])
+        em_andamento = Reserva.objects.create(
+            cliente=self.cliente, quarto=self.livre,
+            data_entrada=date(2026, 11, 14), data_saida=date(2026, 11, 15),
+            status="E",
+        )
+        url = reverse("listar_reservas")
+
+        padrao = self.client.get(url)
+        self.assertEqual(
+            [reserva.id for reserva in padrao.context["reservas"]],
+            [em_andamento.id],
+        )
+        self.assertContains(padrao, 'value="sem_finalizadas" selected')
+
+        todas = self.client.get(url, {"exibir": "todas"})
+        self.assertEqual(
+            [reserva.id for reserva in todas.context["reservas"]],
+            [finalizada.id, em_andamento.id],
+        )
+
+        somente_finalizadas = self.client.get(url, {"exibir": "finalizadas", "q": "101"})
+        self.assertEqual(
+            [reserva.id for reserva in somente_finalizadas.context["reservas"]],
+            [finalizada.id],
+        )
+        self.assertContains(somente_finalizadas, 'value="finalizadas" selected')
+        self.assertContains(somente_finalizadas, 'value="101"')
+
+        invalido = self.client.get(url, {"exibir": "qualquer"})
+        self.assertEqual(invalido.context["filtro"], "sem_finalizadas")
 
     def test_saida_e_entrada_no_mesmo_dia_nao_conflitam(self):
         resposta = self.client.get(reverse("quartos_disponiveis"), {
