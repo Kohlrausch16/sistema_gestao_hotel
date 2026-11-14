@@ -259,6 +259,24 @@ label{
     width: 100%;
 }
 
+.botao-checkout {
+    background-color: #0F172A;
+    border: 1px solid #0F172A;
+    border-radius: 7px;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-family: "Inter", sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 0.7rem 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.botao-checkout:hover {
+    background-color: #334155;
+}
+
 .formulario-tipo-quarto {
     display: flex;
     flex-direction: column;

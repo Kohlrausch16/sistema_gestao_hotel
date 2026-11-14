@@ -105,6 +105,25 @@ class DisponibilidadeQuartosTests(TestCase):
         self.assertEqual(Reserva.objects.count(), 2)
         self.assertEqual(Reserva.objects.get(quarto=self.livre).preco_total, Decimal("200.00"))
 
+    def test_checkin_mantem_quarto_ocupado_e_indisponivel(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+
+        with patch("hotelaria_app.views.timezone.localdate", return_value=date(2026, 11, 11)):
+            resposta = self.client.post(reverse("checkin", args=[reserva.id]))
+            listagem = self.client.get(reverse("listar_quartos"))
+            disponibilidade = self.client.get(reverse("quartos_disponiveis"), {
+                "entrada": "2026-11-11", "saida": "2026-11-13"
+            })
+
+        self.assertRedirects(resposta, reverse("listar_reservas"))
+        self.assertContains(listagem, "Ocupado")
+        self.assertNotIn(
+            self.ocupado.id,
+            [quarto["id"] for quarto in disponibilidade.json()["quartos"]],
+        )
+        reserva.refresh_from_db()
+        self.assertEqual(reserva.status, "E")
+
     def test_adicionais_sazonais_somam_somente_nas_noites_aplicaveis(self):
         alta = TarifaSazonal.objects.create(
             descricao="Alta temporada", valor="30.00",
@@ -335,6 +354,25 @@ class DisponibilidadeQuartosTests(TestCase):
             self.ocupado.id,
             [quarto["id"] for quarto in resposta.json()["quartos"]],
         )
+
+    def test_checkout_aparece_e_mantem_quarto_ocupado(self):
+        reserva = Reserva.objects.get(quarto=self.ocupado)
+        reserva.status = "E"
+        reserva.save(update_fields=["status"])
+        self.ocupado.status = "O"
+        self.ocupado.save(update_fields=["status"])
+        url = reverse("checkout", args=[reserva.id])
+
+        with patch("hotelaria_app.views.timezone.localdate", return_value=date(2026, 11, 11)):
+            listagem = self.client.get(reverse("listar_reservas"))
+            resposta = self.client.post(url)
+
+        self.assertContains(listagem, url)
+        self.assertRedirects(resposta, reverse("listar_reservas"))
+        reserva.refresh_from_db()
+        self.ocupado.refresh_from_db()
+        self.assertEqual(reserva.status, "F")
+        self.assertEqual(self.ocupado.status, "O")
 
     def test_reserva_excluida_logicamente_nao_aparece_na_listagem(self):
         reserva = Reserva.objects.get(quarto=self.ocupado)

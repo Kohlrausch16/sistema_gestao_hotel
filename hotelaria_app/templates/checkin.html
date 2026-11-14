@@ -1,0 +1,74 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Check-in{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}?v=2">
+{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
+    <h1 class="titulo-pagina">CHECK-IN</h1>
+{% endblock %}
+
+{% block main %}
+    <form class="pesquisa-quartos" method="get" action="{% url 'checkin_page' %}">
+        <input
+            type="search"
+            name="q"
+            value="{{ pesquisa }}"
+            placeholder="Buscar por nome do cliente ou número do quarto"
+            aria-label="Buscar por nome do cliente ou número do quarto"
+        >
+        <button type="submit">Buscar</button>
+    </form>
+
+    {% if reservas %}
+        <section class="painel-quartos" aria-label="Reservas para check-in">
+            <div class="painel-cabecalho">
+                <h2>Reservas ativas</h2>
+                <span class="contador-quartos">{{ reservas|length }} reserva{{ reservas|length|pluralize }}</span>
+            </div>
+
+            <div class="tabela-rolagem">
+                <table class="tabela-quartos">
+                    <thead>
+                        <tr>
+                            <th scope="col">Cliente</th>
+                            <th scope="col">Quarto</th>
+                            <th scope="col">Entrada</th>
+                            <th scope="col">Saída</th>
+                            <th scope="col">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas %}
+                            <tr>
+                                <td>{{ reserva.cliente }}</td>
+                                <td class="numero-quarto">{{ reserva.quarto.numero }}</td>
+                                <td>{{ reserva.data_entrada|date:"d/m/Y" }}</td>
+                                <td>{{ reserva.data_saida|date:"d/m/Y" }}</td>
+                                <td>
+                                    <form action="{% url 'checkin' reserva.id %}" method="post" class="form-excluir-quarto">
+                                        {% csrf_token %}
+                                        <button type="submit" class="botao-editar" aria-label="Fazer check-in da reserva de {{ reserva.cliente }} no quarto {{ reserva.quarto.numero }}" title="Check-in">
+                                            <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% else %}
+        <div class="lista-vazia">
+            <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+            <h3>Nenhuma reserva encontrada</h3>
+            <p>Busque por nome do cliente ou número do quarto.</p>
+        </div>
+    {% endif %}
+{% endblock %}
