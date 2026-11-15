@@ -1,0 +1,143 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    color: #172b4d;
+    background: #f2f5f2;
+    font-family: "Montserrat", "Trebuchet MS", sans-serif;
+}
+
+.login-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 12px;
+    min-height: 100vh;
+}
+
+.login-painel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+}
+
+.login-logo {
+    display: block;
+    width: min(100%, 340px);
+    height: auto;
+    margin: 0 auto 48px;
+}
+
+.login-conteudo {
+    width: min(100%, 420px);
+    padding: 36px;
+    border: 1px solid #d8e0dc;
+    border-top: 4px solid #25816e;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 16px 40px rgb(23 43 77 / 8%);
+}
+
+.login-etiqueta {
+    margin: 0 0 10px;
+    color: #25816e;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+h1 {
+    margin: 0;
+    color: #172b4d;
+    font-size: 1.65rem;
+}
+
+.login-descricao {
+    margin: 10px 0 28px;
+    color: #5d6b7b;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.login-campo {
+    margin-bottom: 20px;
+}
+
+.login-campo label {
+    display: block;
+    margin-bottom: 7px;
+    color: #25364b;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.login-campo input {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5d1;
+    border-radius: 4px;
+    color: #172b4d;
+    background: #fff;
+    font: inherit;
+}
+
+.login-campo input:focus {
+    border-color: #25816e;
+    outline: 3px solid rgb(37 129 110 / 16%);
+}
+
+.login-botao {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 4px;
+    border: 0;
+    border-radius: 4px;
+    color: #fff;
+    background: #172b4d;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 160ms ease;
+}
+
+.login-botao:hover {
+    background: #25816e;
+}
+
+.login-erro {
+    margin-bottom: 20px;
+    padding: 12px;
+    border-left: 3px solid #bd3b36;
+    color: #852b28;
+    background: #fff1ef;
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
+.login-faixa {
+    background: #25816e;
+}
+
+@media (max-width: 480px) {
+    .login-layout {
+        grid-template-columns: minmax(0, 1fr) 6px;
+    }
+
+    .login-painel {
+        padding: 32px 18px;
+    }
+
+    .login-logo {
+        width: min(100%, 280px);
+        margin-bottom: 34px;
+    }
+
+    .login-conteudo {
+        padding: 28px 22px;
+    }
+}

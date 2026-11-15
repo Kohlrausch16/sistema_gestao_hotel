@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar | HotelPlus</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'assets/img/favicon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+    <main class="login-layout">
+        <section class="login-painel" aria-labelledby="login-titulo">
+            <img class="login-logo" src="{% static 'assets/img/logo-light-mode.png' %}" alt="HotelPlus - Sistema de Gestão Hoteleira">
+
+            <div class="login-conteudo">
+                <p class="login-etiqueta">ÁREA RESTRITA</p>
+                <h1 id="login-titulo">Acesse sua conta</h1>
+                <p class="login-descricao">Entre com seu usuário e senha para continuar.</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next }}">
+
+                    {% if form.non_field_errors %}
+                        <div class="login-erro" role="alert">
+                            Usuário ou senha inválidos. Confira os dados e tente novamente.
+                        </div>
+                    {% endif %}
+
+                    <div class="login-campo">
+                        <label for="id_username">Usuário</label>
+                        <input
+                            type="text"
+                            name="username"
+                            id="id_username"
+                            value="{{ form.username.value|default_if_none:'' }}"
+                            autocomplete="username"
+                            required
+                            autofocus
+                        >
+                    </div>
+
+                    <div class="login-campo">
+                        <label for="id_password">Senha</label>
+                        <input
+                            type="password"
+                            name="password"
+                            id="id_password"
+                            autocomplete="current-password"
+                            required
+                        >
+                    </div>
+
+                    <button class="login-botao" type="submit">Entrar</button>
+                </form>
+            </div>
+        </section>
+        <div class="login-faixa" aria-hidden="true"></div>
+    </main>
+</body>
+</html>

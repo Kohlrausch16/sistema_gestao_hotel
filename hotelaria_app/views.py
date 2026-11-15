@@ -23,6 +23,26 @@ from .models import Funcionario
 from .forms import CadastroForm, FuncionarioForm
 from .models import Ocorrencia, Relatorio
 
+from functools import wraps
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+
+
+def gerente_ou_administrador_required(view):
+    @login_required
+    @wraps(view)
+    def wrapper(request, *args, **kwargs):
+        if not (
+            request.user.is_superuser
+            or Funcionario.objects.filter(
+                usuario=request.user,
+                cargo='gerente',
+            ).exists()
+        ):
+            raise PermissionDenied
+        return view(request, *args, **kwargs)
+
+    return wrapper
 
 def index(request):
     hoje = timezone.localdate()
@@ -335,6 +355,8 @@ def cancelar_reserva(request, reserva_id):
     messages.success(request, "Reserva cancelada com sucesso!")
     return redirect('listar_reservas')
 
+
+@gerente_ou_administrador_required
 def cadastrar_funcionario(request):
 
     if request.method == 'POST':
@@ -408,6 +430,7 @@ def listar_funcionarios(request):
 
     return render(request, 'listar_funcionarios.html', dados)
 
+@gerente_ou_administrador_required
 def editar_funcionario(request, id):
 
     funcionario = Funcionario.objects.get(id=id)
@@ -433,7 +456,7 @@ def editar_funcionario(request, id):
 
     return render(request, 'editar_funcionario.html', dados)
 
-
+@gerente_ou_administrador_required
 def desativar_funcionario(request, id):
 
     funcionario = Funcionario.objects.get(id=id)
@@ -460,6 +483,7 @@ def funcionarios_inativos(request):
 
     return render(request, 'funcionarios_inativos.html', dados)
 
+@gerente_ou_administrador_required
 def ativar_funcionario(request, id):
 
     funcionario = Funcionario.objects.get(id=id)
