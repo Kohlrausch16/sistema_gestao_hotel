@@ -64,9 +64,7 @@ class ClienteForm(forms.ModelForm):
                 "class": "campo-formulario placeholder-input input-data-nascimento",
                 "placeholder": "01/01/1970"
             },
-            format = {
-                "%Y-%m-%d"
-            }),
+            format="%Y-%m-%d"),
 
             "email": forms.TextInput(attrs={
                 "class": "campo-formulario placeholder-input input-email",
