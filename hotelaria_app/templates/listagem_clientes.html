@@ -1,57 +1,78 @@
 {% extends "partials/_base.html" %}
 {% load static %}
 
-{% block arquivos_css %}
-    <link rel="stylesheet" href={% static "css/formulario.css" %} />
-{% endblock %}
+{% block title %}Clientes{% endblock %}
 
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/listagem_clientes.css' %}">
+{% endblock %}
 
 {% block titulo_pagina %}
-
-<button class="botao-retornar"> < Voltar</button>
-<h1 class="titulo-pagina">CLIENTES</h1>
-
+    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
+    <div class="cabecalho-clientes">
+        <div>
+            <h1 class="titulo-pagina">CLIENTES</h1>
+            <p class="subtitulo-clientes">Consulte os clientes cadastrados no hotel.</p>
+        </div>
+        <a class="botao-novo-cliente" href="{% url 'cadastrar_cliente' %}">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> Cadastrar cliente
+        </a>
+    </div>
 {% endblock %}
 
-
 {% block main %}
+    {% if clientes %}
+        <form class="pesquisa-clientes" role="search">
+            <input id="pesquisa-clientes" type="search" placeholder="Pesquisar cliente pelo nome" aria-label="Pesquisar cliente pelo nome">
+            <button type="submit">Pesquisar</button>
+        </form>
+    {% endif %}
 
-    <div class="acoes-pagina-container">
-        <input class="campo-formulario placeholder-input input-cpf" placeholder="Informe o nome do cliente para buscar" />
-        <button class="botao-formulario botao-cancelar">Buscar</button>
-        <a href="{% url "cadastrar_cliente" %}" class="botao-formulario botao-confirmar">Adicionar cliente</a>
-    </div>
+    <section class="painel-clientes" aria-label="Lista de clientes">
+        <div class="painel-clientes-cabecalho">
+            <h2>Clientes cadastrados</h2>
+            <span class="contador-clientes">{{ clientes|length }} cliente{{ clientes|length|pluralize }}</span>
+        </div>
 
-    <table border="">
-        <thead>
-            <tr>
-                <th class="titulo-coluna-tabela coluna-nome">NOME</th>
-                <th class="titulo-coluna-tabela">CPF</th>
-                <th class="titulo-coluna-tabela">HOSPEDADO</th>
-                <th class="titulo-coluna-tabela">MOSTRAR MAIS</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-
-            {% for cliente in clientes %}
-
-                <tr class="item-tabela">
-                    <td class="tabela-fonte-1 coluna-nome">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
-                    <td class="tabela-fonte-2 campo-cpf">{{ cliente.cpf }}</td>
-                    <!-- TODO Implementar fetch das hospedagens - Depende do Model de Checkins -->
-                    <td class="tabela-fonte-3">{{ True }}</td>
-                    <td class="coluna-acao">
-                        ddd
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
+        {% if clientes %}
+            <div class="tabela-clientes-rolagem">
+                <table class="tabela-clientes">
+                    <thead>
+                        <tr>
+                            <th scope="col">Nome</th>
+                            <th scope="col">CPF</th>
+                            <th scope="col">Hospedado</th>
+                            <th scope="col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cliente in clientes %}
+                            <tr class="linha-cliente">
+                                <td class="nome-cliente">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
+                                <td>{{ cliente.cpf }}</td>
+                                <td><span class="situacao-indisponivel" title="Informação ainda não disponível">—</span></td>
+                                <td>
+                                    <a class="botao-editar-cliente" href="{% url 'editar_cliente' cliente.id %}" aria-label="Editar cliente {{ cliente.nome }} {{ cliente.sobrenome }}" title="Editar cliente">
+                                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        <tr class="nenhum-cliente-encontrado" hidden><td colspan="4">Nenhum cliente encontrado.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="clientes-vazios">
+                <i class="fa-solid fa-users" aria-hidden="true"></i>
+                <h3>Nenhum cliente cadastrado</h3>
+                <p>Cadastre o primeiro cliente para vê-lo nesta lista.</p>
+                <a href="{% url 'cadastrar_cliente' %}">Cadastrar cliente</a>
+            </div>
+        {% endif %}
+    </section>
 {% endblock %}
 
 {% block arquivos_js %}
-    <script src="{% static 'scripts/aplicarMascaraCpf.js' %}"></script>
+    <script src="{% static 'scripts/filtrarClientesListagem.js' %}"></script>
 {% endblock %}
