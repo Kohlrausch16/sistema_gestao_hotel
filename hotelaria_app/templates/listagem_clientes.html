@@ -23,7 +23,7 @@
 {% block main %}
     {% if clientes %}
         <form class="pesquisa-clientes" role="search">
-            <input id="pesquisa-clientes" type="search" placeholder="Pesquisar cliente pelo nome" aria-label="Pesquisar cliente pelo nome">
+            <input id="pesquisa-clientes" type="search" placeholder="Pesquisar cliente por nome ou CPF" aria-label="Pesquisar cliente por nome ou CPF">
             <button type="submit">Pesquisar</button>
         </form>
     {% endif %}
@@ -49,7 +49,7 @@
                         {% for cliente in clientes %}
                             <tr class="linha-cliente">
                                 <td class="nome-cliente">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
-                                <td>{{ cliente.cpf }}</td>
+                                <td class="cpf-cliente">{{ cliente.cpf }}</td>
                                 <td>
                                     <span class="status-cliente {% if cliente.hospedado %}status-cliente-hospedado{% else %}status-cliente-ausente{% endif %}">
                                         {% if cliente.hospedado %}Sim{% else %}Não{% endif %}
@@ -78,5 +78,5 @@
 {% endblock %}
 
 {% block arquivos_js %}
-    <script src="{% static 'scripts/filtrarClientesListagem.js' %}"></script>
+    <script src="{% static 'scripts/filtrarClientesListagem.js' %}?v=2"></script>
 {% endblock %}

@@ -7,11 +7,13 @@ if (formularioPesquisaClientes) {
 
     const filtrarClientes = () => {
         const pesquisa = campoPesquisa.value.trim().toLocaleLowerCase("pt-BR");
+        const cpfPesquisado = pesquisa.replace(/\D/g, "");
         let encontrados = 0;
 
         linhas.forEach((linha) => {
             const nome = linha.querySelector(".nome-cliente").textContent.toLocaleLowerCase("pt-BR");
-            linha.hidden = !nome.includes(pesquisa);
+            const cpf = linha.querySelector(".cpf-cliente").textContent.replace(/\D/g, "");
+            linha.hidden = !nome.includes(pesquisa) && !(cpfPesquisado && cpf.includes(cpfPesquisado));
             if (!linha.hidden) encontrados += 1;
         });
 
