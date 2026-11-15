@@ -1,0 +1,130 @@
+.agenda-home{
+    color: #0F172A;
+    font-family: "Inter", sans-serif;
+}
+
+.agenda-cabecalho{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.agenda-data{
+    margin: 0 0 0.4rem;
+    color: #2563EB;
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.agenda-cabecalho h1{
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+.agenda-colunas{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 1rem;
+}
+
+.agenda-painel{
+    overflow: hidden;
+    border: 1px solid #CBD5E1;
+    border-radius: 5px;
+    background: #FFFFFF;
+}
+
+.agenda-painel-cabecalho{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.agenda-painel-cabecalho h2{
+    margin: 0;
+    font-size: 1rem;
+}
+
+.agenda-painel-cabecalho p{
+    margin: 0.35rem 0 0;
+    color: #64748B;
+    font-size: 0.8rem;
+}
+
+.agenda-contador{
+    display: grid;
+    width: 2rem;
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: 50%;
+    background: #DBEAFE;
+    color: #1D4ED8;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.agenda-painel-checkout .agenda-contador{
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.agenda-lista{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.agenda-reserva{
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.agenda-reserva:last-child{
+    border-bottom: 0;
+}
+
+.agenda-reserva-info{
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.agenda-reserva-info strong,
+.agenda-reserva-info span,
+.agenda-reserva time{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.agenda-reserva-info strong{
+    font-size: 0.875rem;
+}
+
+.agenda-reserva-info span,
+.agenda-reserva time{
+    color: #64748B;
+    font-size: 0.78rem;
+}
+
+.agenda-vazia{
+    padding: 1.5rem 1.25rem;
+    color: #64748B;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 650px){
+    .agenda-colunas{
+        grid-template-columns: 1fr;
+    }
+}

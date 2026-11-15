@@ -25,8 +25,23 @@ from .models import Ocorrencia, Relatorio
 
 
 def index(request):
+    hoje = timezone.localdate()
+    checkins = Reserva.objects.filter(
+        ativo=True,
+        status='A',
+        data_entrada__lte=hoje,
+    ).select_related('cliente', 'quarto').order_by('data_entrada', 'quarto__numero')
+    checkouts = Reserva.objects.filter(
+        ativo=True,
+        status='E',
+        data_saida__lte=hoje,
+    ).select_related('cliente', 'quarto').order_by('data_saida', 'quarto__numero')
 
-    return render(request, "index.html")
+    return render(request, "index.html", {
+        'hoje': hoje,
+        'checkins': checkins,
+        'checkouts': checkouts,
+    })
 
 def listar_clientes(request):
 
@@ -680,3 +695,22 @@ def checkout(request, reserva_id):
     reserva.save(update_fields=['status'])
     messages.success(request, "Check-out realizado com sucesso!")
     return redirect('listar_reservas')
+
+def checkincheckout(request):
+    pesquisa = request.GET.get("q", "").strip()
+    reservas = Reserva.objects.filter(ativo=True).select_related('cliente', 'quarto', 'quarto__tipo')
+
+    if pesquisa:
+        reservas = reservas.filter(
+            Q(cliente__nome__icontains=pesquisa)
+            | Q(cliente__sobrenome__icontains=pesquisa)
+            | Q(quarto__numero__icontains=pesquisa)
+        )
+
+    dados = {
+        "reservas": reservas.order_by('data_entrada'),
+        "pesquisa": pesquisa,
+        "hoje": timezone.localdate(),
+    }
+
+    return render(request, "checkin_checkout.html", dados)
