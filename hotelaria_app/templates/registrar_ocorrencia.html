@@ -19,15 +19,15 @@
 
     {% csrf_token %}
 
-    <label class="funcionario-label" for="ocorrencia-reserva">Quarto / reserva:</label>
-    <select class="funcionario-campo" id="ocorrencia-reserva" name="reserva_id" required>
+    <label class="funcionario-label" for="ocorrencia-quarto">Quarto:</label>
+    <select class="funcionario-campo" id="ocorrencia-quarto" name="quarto_id" required>
         <option value="">Selecione o quarto</option>
-        {% for reserva in reservas %}
-            <option value="{{ reserva.id }}">
-                Quarto {{ reserva.quarto.numero }}
+        {% for quarto in quartos %}
+            <option value="{{ quarto.id }}">
+                Quarto {{ quarto.numero }}
             </option>
         {% empty %}
-            <option value="" disabled>Nenhuma reserva ativa disponível</option>
+            <option value="" disabled>Nenhum quarto disponível</option>
         {% endfor %}
     </select>
 

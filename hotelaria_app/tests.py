@@ -63,6 +63,32 @@ class DisponibilidadeQuartosTests(TestCase):
         self.assertContains(listagem, "Simples")
         self.assertContains(cadastro, "Simples")
 
+    def test_ocorrencia_e_registrada_por_quarto(self):
+        url = reverse("registrar_ocorrencia")
+        pagina = self.client.get(url)
+        resposta = self.client.post(url, {
+            "quarto_id": self.livre.id,
+            "descricao": "Lâmpada queimada",
+        })
+
+        self.assertContains(pagina, 'name="quarto_id"')
+        self.assertRedirects(resposta, reverse("listar_ocorrencia"))
+        ocorrencia = self.livre.ocorrencia_set.get()
+        self.assertEqual(ocorrencia.descricao, "Lâmpada queimada")
+
+    def test_links_de_ordenacao_das_ocorrencias_preservam_a_busca(self):
+        for nome_url in ("listar_ocorrencia", "ocorrencias_concluidas"):
+            pagina = self.client.get(reverse(nome_url), {"pesquisar_quarto": "101"})
+
+            self.assertContains(
+                pagina,
+                'href="?ordem=crescente&amp;pesquisar_quarto=101"',
+            )
+            self.assertContains(
+                pagina,
+                'href="?ordem=decrescente&amp;pesquisar_quarto=101"',
+            )
+
     def test_quarto_usa_preco_do_tipo_sem_preco_proprio(self):
         cadastro = self.client.get(reverse("cadastrar_quarto"))
         self.assertNotContains(cadastro, 'name="preco_diaria"')

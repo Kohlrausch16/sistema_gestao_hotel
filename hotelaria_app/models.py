@@ -104,13 +104,13 @@ class Reserva(models.Model):
         return f"Reserva de {self.cliente} no quarto {self.quarto} de {self.data_entrada} a {self.data_saida}"
     
 class Ocorrencia(models.Model):
-    reserva = models.ForeignKey(Reserva, on_delete=models.CASCADE)
+    quarto = models.ForeignKey(Quarto, on_delete=models.CASCADE)
     descricao = models.TextField()
     data_ocorrencia = models.DateTimeField(auto_now_add=True)
     concluida = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Ocorrência para a reserva {self.reserva.id} em {self.data_ocorrencia}"
+        return f"Ocorrência para o quarto {self.quarto.numero} em {self.data_ocorrencia}"
 
 class Relatorio(models.Model):
     CAMPOS_CHOICE = [

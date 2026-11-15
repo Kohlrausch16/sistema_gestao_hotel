@@ -431,26 +431,22 @@ def ativar_funcionario(request, id):
 
 def registrar_ocorrencia(request):
     if request.method == 'POST':
-        reserva_id = request.POST.get('reserva_id')
+        quarto_id = request.POST.get('quarto_id')
         descricao = request.POST.get('descricao')
 
-        reserva = get_object_or_404(Reserva, id=reserva_id)
-
-        if reserva.status != 'A':
-            messages.error(request, "Não é possível registrar ocorrências para reservas que não estão ativas.")
-            return redirect('listar_ocorrencia')
+        quarto = get_object_or_404(Quarto, id=quarto_id, ativo=True)
 
         Ocorrencia.objects.create(
-            reserva=reserva,
+            quarto=quarto,
             descricao=descricao
         )
 
         messages.success(request, "Ocorrência registrada com sucesso!")
         return redirect('listar_ocorrencia')
 
-    reservas_ativas = Reserva.objects.filter(status='A')
+    quartos = Quarto.objects.filter(ativo=True).order_by('numero')
     dados = {
-        'reservas': reservas_ativas
+        'quartos': quartos
     }
     return render(request, 'registrar_ocorrencia.html', dados)
 
@@ -460,13 +456,13 @@ def listar_ocorrencia(request):
 
     ocorrencias = Ocorrencia.objects.filter(
         concluida=False,
-        reserva__quarto__numero__icontains=pesquisar_quarto
+        quarto__numero__icontains=pesquisar_quarto
     ).order_by('data_ocorrencia')
 
     if ordem == 'decrescente':
         ocorrencias = Ocorrencia.objects.filter(
             concluida=False,
-            reserva__quarto__numero__icontains=pesquisar_quarto
+            quarto__numero__icontains=pesquisar_quarto
         ).order_by('-data_ocorrencia')
 
     dados = {
@@ -489,13 +485,13 @@ def ocorrencias_concluidas(request):
 
     ocorrencias_concluidas = Ocorrencia.objects.filter(
         concluida=True,
-        reserva__quarto__numero__icontains=pesquisar_quarto,
+        quarto__numero__icontains=pesquisar_quarto,
     ).order_by('data_ocorrencia')
 
     if ordem == 'decrescente':
         ocorrencias_concluidas = Ocorrencia.objects.filter(
             concluida=True,
-            reserva__quarto__numero__icontains=pesquisar_quarto,
+            quarto__numero__icontains=pesquisar_quarto,
         ).order_by('-data_ocorrencia')
 
     dados = {

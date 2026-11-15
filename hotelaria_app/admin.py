@@ -17,7 +17,7 @@ class TipoQuartoAdmin(admin.ModelAdmin):
     list_display = ("tipo", "preco_diaria")
 @admin.register(Ocorrencia)
 class OcorrenciaAdmin(admin.ModelAdmin):
-    list_display = ("reserva", "descricao", "data_ocorrencia")
+    list_display = ("quarto", "descricao", "data_ocorrencia")
 @admin.register(Relatorio)
 class RelatorioAdmin(admin.ModelAdmin):
     list_display = ("campos",)

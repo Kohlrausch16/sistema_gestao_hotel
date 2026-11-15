@@ -269,14 +269,14 @@ class ReservaForm(forms.ModelForm):
 class OcorrenciaForm(forms.ModelForm):
     class Meta:
         model = Ocorrencia
-        fields = ['reserva', 'descricao']
+        fields = ['quarto', 'descricao']
         labels = {
-            'reserva': 'RESERVA',
+            'quarto': 'QUARTO',
             'descricao': 'DESCRIÇÃO'
         }
         widgets = {
-            'reserva': forms.Select(attrs={
-                "class": "campo-formulario placeholder-input input-reserva"
+            'quarto': forms.Select(attrs={
+                "class": "campo-formulario placeholder-input input-quarto"
             }),
             'descricao': forms.Textarea(attrs={
                 "class": "campo-formulario placeholder-input input-descricao",

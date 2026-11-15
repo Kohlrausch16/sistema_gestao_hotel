@@ -55,8 +55,8 @@
                     <th>Descrição</th>
                     <th>
                         Data da ocorrência
-                        <a class="funcionario-ordenacao" aria-label="Mais antigas primeiro" href="?ordem=crescente;pesquisar_quarto={{ pesquisar_quarto }}">↑</a>
-                        <a class="funcionario-ordenacao" aria-label="Mais recentes primeiro" href="?ordem=decrescente;pesquisar_quarto={{ pesquisar_quarto }}">↓</a>
+                        <a class="funcionario-ordenacao" aria-label="Mais antigas primeiro" href="?ordem=crescente&amp;pesquisar_quarto={{ pesquisar_quarto }}">↑</a>
+                        <a class="funcionario-ordenacao" aria-label="Mais recentes primeiro" href="?ordem=decrescente&amp;pesquisar_quarto={{ pesquisar_quarto }}">↓</a>
                     </th>
                     <th>Ações</th>
                 </tr>
@@ -67,7 +67,7 @@
                 {% for ocorrencia in ocorrencias %}
 
                     <tr>
-                        <td>{{ ocorrencia.reserva.quarto.numero }}</td>
+                        <td>{{ ocorrencia.quarto.numero }}</td>
                         <td>{{ ocorrencia.descricao }}</td>
                         <td>{{ ocorrencia.data_ocorrencia|date:"d/m/Y H:i" }}</td>
                         <td>
