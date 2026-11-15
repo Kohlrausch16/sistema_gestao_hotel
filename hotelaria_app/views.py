@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q, Value
+from django.db.models import Exists, OuterRef, Prefetch, Q, Value
 from django.db.models.functions import Concat, Lower
 from .models import Cliente, Quarto, Reserva, TarifaSazonal, TipoQuarto
 from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis, reservas_ativas_em
@@ -79,7 +79,12 @@ def cadastrar_quarto(request):
 def listar_quartos(request):
     pesquisa = request.GET.get("q", "").strip()
     hoje = timezone.localdate()
-    quartos = Quarto.objects.select_related('tipo').filter(ativo=True).annotate(
+    reservas_futuras = Reserva.objects.filter(
+        ativo=True, status='A', data_entrada__gte=hoje
+    ).select_related('cliente').order_by('data_entrada', 'id')
+    quartos = Quarto.objects.select_related('tipo').filter(ativo=True).prefetch_related(
+        Prefetch('reserva_set', queryset=reservas_futuras, to_attr='reservas_futuras')
+    ).annotate(
         ocupado_hoje=Exists(reservas_ativas_em(hoje).filter(quarto_id=OuterRef('pk')))
     )
     if pesquisa:
@@ -254,7 +259,7 @@ def checkin_page(request):
 
 def editar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id, ativo=True)
-    if reserva.status != 'A' or reserva.data_entrada <= timezone.localdate():
+    if reserva.status != 'A' or reserva.data_entrada < timezone.localdate():
         messages.error(request, "A reserva só pode ser editada antes do check-in enquanto estiver ativa.")
         return redirect('listar_reservas')
 
@@ -262,8 +267,8 @@ def editar_reserva(request, reserva_id):
 
     if request.method == "POST":
         if form.is_valid():
-            if form.cleaned_data["data_entrada"] <= timezone.localdate():
-                form.add_error("data_entrada", "A entrada deve ser uma data futura.")
+            if form.cleaned_data["data_entrada"] < timezone.localdate():
+                form.add_error("data_entrada", "A entrada não pode ser anterior à data de hoje.")
             else:
                 form.save()
                 messages.success(request, "Reserva atualizada com sucesso!")
@@ -282,7 +287,7 @@ def cancelar_reserva(request, reserva_id):
         messages.error(request, "Apenas reservas ativas podem ser canceladas.")
         return redirect('listar_reservas')
 
-    if reserva.data_entrada <= timezone.localdate():
+    if reserva.data_entrada < timezone.localdate():
         messages.error(request, "A reserva só pode ser cancelada antes do check-in.")
         return redirect('listar_reservas')
 

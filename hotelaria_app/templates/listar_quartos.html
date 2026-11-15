@@ -4,7 +4,7 @@
 {% block title %}Quartos{% endblock %}
 
 {% block arquivos_css %}
-    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}">
+    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}?v=2">
 {% endblock %}
 
 {% block titulo_pagina %}
@@ -45,6 +45,7 @@
                             <th scope="col">Número</th>
                             <th scope="col">Tipo</th>
                             <th scope="col">Status</th>
+                            <th scope="col">Reservas</th>
                             <th scope="col">Ações</th>
                         </tr>
                     </thead>
@@ -57,6 +58,11 @@
                                     <span class="status-quarto status-{{ quarto.status_atual|lower }}">
                                         {{ quarto.status_atual_display }}
                                     </span>
+                                </td>
+                                <td>
+                                    <button type="button" class="botao-reservas" data-dialog-id="reservas-quarto-{{ quarto.id }}" aria-label="Ver reservas futuras do quarto {{ quarto.numero }}">
+                                        {{ quarto.reservas_futuras|length }}
+                                    </button>
                                 </td>
                                 <td>
                                     <div class="acoes-quarto">
@@ -91,4 +97,36 @@
             </div>
         {% endif %}
     </section>
+    {% for quarto in quartos %}
+        <dialog id="reservas-quarto-{{ quarto.id }}" class="dialogo-reservas" aria-labelledby="titulo-reservas-{{ quarto.id }}">
+            <div class="dialogo-reservas-cabecalho">
+                <div>
+                    <span class="dialogo-reservas-etiqueta">QUARTO {{ quarto.numero }}</span>
+                    <h2 id="titulo-reservas-{{ quarto.id }}">Reservas futuras</h2>
+                    <p>{{ quarto.reservas_futuras|length }} reserva{{ quarto.reservas_futuras|length|pluralize }} agendada{{ quarto.reservas_futuras|length|pluralize }}</p>
+                </div>
+                <button type="button" class="fechar-dialogo-reservas" aria-label="Fechar reservas do quarto {{ quarto.numero }}">&times;</button>
+            </div>
+            {% if quarto.reservas_futuras %}
+                <ul class="lista-reservas-futuras">
+                    {% for reserva in quarto.reservas_futuras %}
+                        <li>
+                            <strong>{{ reserva.cliente }}</strong>
+                            <div class="datas-reserva-futura">
+                                <span><small>ENTRADA</small>{{ reserva.data_entrada|date:"d/m/Y" }}</span>
+                                <span class="separador-datas" aria-hidden="true">→</span>
+                                <span><small>SAÍDA</small>{{ reserva.data_saida|date:"d/m/Y" }}</span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="sem-reservas-futuras">Nenhuma reserva futura para este quarto.</p>
+            {% endif %}
+        </dialog>
+    {% endfor %}
+{% endblock %}
+
+{% block arquivos_js %}
+    <script src="{% static 'scripts/listarQuartos.js' %}?v=2"></script>
 {% endblock %}

@@ -105,6 +105,145 @@
     font-weight: 700;
 }
 
+.botao-reservas{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0.35rem;
+    border: 1px solid #BFDBFE;
+    border-radius: 999px;
+    background: #EFF6FF;
+    color: #1D4ED8;
+    font: 700 0.8rem "Inter", sans-serif;
+    cursor: pointer;
+}
+
+.botao-reservas:hover,
+.botao-reservas:focus-visible{
+    background: #DBEAFE;
+    border-color: #60A5FA;
+}
+
+.dialogo-reservas{
+    box-sizing: border-box;
+    width: min(32rem, calc(100% - 2rem));
+    max-height: min(80vh, 40rem);
+    padding: 0;
+    border: 1px solid #CBD5E1;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px #0F172A33;
+    color: #0F172A;
+    font-family: "Inter", sans-serif;
+}
+
+.dialogo-reservas::backdrop{
+    background: #0F172A99;
+}
+
+.dialogo-reservas-cabecalho{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.dialogo-reservas-etiqueta{
+    color: #2563EB;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
+.dialogo-reservas-cabecalho h2{
+    margin: 0.4rem 0;
+    font-size: 1.25rem;
+}
+
+.dialogo-reservas-cabecalho p{
+    margin: 0;
+    color: #64748B;
+    font-size: 0.8rem;
+}
+
+.fechar-dialogo-reservas{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 6px;
+    background: #F1F5F9;
+    color: #475569;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.fechar-dialogo-reservas:hover{
+    background: #E2E8F0;
+}
+
+.lista-reservas-futuras{
+    max-height: 50vh;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0.5rem 1.5rem 1.5rem;
+    list-style: none;
+}
+
+.lista-reservas-futuras li{
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    background: #F8FAFC;
+    font-size: 0.875rem;
+}
+
+.lista-reservas-futuras li strong{
+    color: #0F172A;
+}
+
+.datas-reserva-futura{
+    display: flex;
+    align-items: end;
+    gap: 0.75rem;
+    color: #334155;
+    font-weight: 600;
+}
+
+.datas-reserva-futura span:not(.separador-datas){
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.datas-reserva-futura small{
+    color: #64748B;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.separador-datas{
+    color: #94A3B8;
+}
+
+.sem-reservas-futuras{
+    margin: 0;
+    padding: 1.5rem;
+    color: #475569;
+    font-size: 0.875rem;
+}
+
 .status-quarto{
     display: inline-block;
     padding: 0.35rem 0.65rem;
