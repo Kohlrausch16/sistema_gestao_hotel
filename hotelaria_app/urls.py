@@ -4,8 +4,6 @@ from hotelaria_app import views
 urlpatterns = [
     path('', views.index, name='index'),
 
-    path('cliente/cadastro/', views.cadastrar_cliente, name='cadastrar_cliente'),
-
     path('funcionario/cadastro/', views.cadastrar_funcionario, name='cadastrar_funcionario'),
     path('funcionario/lista/', views.listar_funcionarios, name='listar_funcionarios'),
     path('funcionario/editar/<int:id>/', views.editar_funcionario, name='editar_funcionario'),
@@ -29,6 +27,7 @@ urlpatterns = [
 
     path('clientes/', views.listar_clientes, name='listagem_clientes'),
     path('clientes/cadastro/', views.cadastrar_cliente, name='cadastrar_cliente'),
+    path('clientes/<uuid:cliente_id>/editar/', views.editar_cliente, name='editar_cliente'),
 
     path('ocorrencias/registrar_ocorrencia', views.registrar_ocorrencia, name='registrar_ocorrencia'),
     path('ocorrencias/', views.listar_ocorrencia, name='listar_ocorrencia'),

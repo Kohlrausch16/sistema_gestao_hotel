@@ -1,0 +1,25 @@
+{% extends "partials/_base.html" %}
+{% load static %}
+
+{% block title %}Editar cliente{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}" />
+{% endblock %}
+
+{% block titulo_pagina %}
+    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
+    <h1 class="titulo-pagina">EDITAR CLIENTE</h1>
+{% endblock %}
+
+{% block main %}
+    <form class="formulario-cliente" method="post" action="{% url 'editar_cliente' cliente.id %}">
+        {% csrf_token %}
+        {{ formulario.as_p }}
+
+        <div class="container-botoes">
+            <a class="botao-formulario botao-cancelar" href="{% url 'listagem_clientes' %}">CANCELAR</a>
+            <button class="botao-formulario botao-confirmar" type="submit">SALVAR ALTERAÇÕES</button>
+        </div>
+    </form>
+{% endblock %}
