@@ -61,6 +61,26 @@ def cadastrar_cliente(request):
         'retorno_cliente': retorno,
     })
 
+def editar_cliente(request, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+    form = ClienteForm(request.POST or None, instance=cliente)
+
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+
+            mensagem_confirmacao = "Cliente atualizado com sucesso!"
+            messages.success(request, mensagem_confirmacao)
+
+            return redirect('listagem_clientes')
+
+    dados = {
+        'formulario': form,
+        'cliente': cliente,
+    }
+
+    return render(request, "editar_cliente.html", dados)
+
 def cadastrar_quarto(request):
     form = QuartoForm(request.POST or None)
 
