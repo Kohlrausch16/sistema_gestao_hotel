@@ -1,11 +1,68 @@
 {% extends "partials/_base.html" %}
+{% load static %}
 
-{% block title %}
-    Home
+{% block title %}Home{% endblock %}
+
+{% block arquivos_css %}
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
 {% endblock %}
 
 {% block menu_dinamico %} Home {% endblock %}
 
 {% block main %}
-    <h1>Home página</h1>
+    <section class="agenda-home" aria-labelledby="agenda-titulo">
+        <header class="agenda-cabecalho">
+            <div>
+                <h1 id="agenda-titulo">Movimentação de hoje</h1>
+            </div>
+        </header>
+
+        <div class="agenda-colunas">
+            <section class="agenda-painel agenda-painel-checkin" aria-labelledby="checkins-titulo">
+                <header class="agenda-painel-cabecalho">
+                    <div>
+                        <h2 id="checkins-titulo">Check-ins pendentes</h2>
+                    </div>
+                </header>
+                <ul class="agenda-lista">
+                    {% for reserva in checkins %}
+                        <li class="agenda-reserva">
+                            <div class="agenda-reserva-info">
+                                <strong>{{ reserva.cliente }}</strong>
+                                <span>Quarto {{ reserva.quarto.numero }}</span>
+                            </div>
+                            <time datetime="{{ reserva.data_entrada|date:'Y-m-d' }}">
+                                {{ reserva.data_entrada|date:"d/m/Y" }}
+                            </time>
+                        </li>
+                    {% empty %}
+                        <li class="agenda-vazia">Nenhum check-in pendente.</li>
+                    {% endfor %}
+                </ul>
+            </section>
+
+            <section class="agenda-painel agenda-painel-checkout" aria-labelledby="checkouts-titulo">
+                <header class="agenda-painel-cabecalho">
+                    <div>
+                        <h2 id="checkouts-titulo">Check-outs pendentes</h2>
+                    </div>
+                </header>
+                <ul class="agenda-lista">
+                    {% for reserva in checkouts %}
+                        <li class="agenda-reserva">
+                            <div class="agenda-reserva-info">
+                                <strong>{{ reserva.cliente }}</strong>
+                                <span>Quarto {{ reserva.quarto.numero }}</span>
+                            </div>
+                            <time datetime="{{ reserva.data_saida|date:'Y-m-d' }}">
+                                {{ reserva.data_saida|date:"d/m/Y" }}
+                            </time>
+                        </li>
+                    {% empty %}
+                        <li class="agenda-vazia">Nenhum check-out pendente.</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        </div>
+    </section>
 {% endblock %}

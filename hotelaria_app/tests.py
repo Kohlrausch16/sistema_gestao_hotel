@@ -63,6 +63,30 @@ class DisponibilidadeQuartosTests(TestCase):
         self.assertContains(listagem, "Simples")
         self.assertContains(cadastro, "Simples")
 
+    def test_home_separa_checkins_e_checkouts_pendentes(self):
+        checkout_pendente = Reserva.objects.create(
+            cliente=self.cliente,
+            quarto=self.livre,
+            data_entrada=date(2026, 11, 9),
+            data_saida=date(2026, 11, 11),
+            status="E",
+        )
+
+        with patch("hotelaria_app.views.timezone.localdate", return_value=date(2026, 11, 11)):
+            resposta = self.client.get(reverse("index"))
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(
+            [reserva.quarto_id for reserva in resposta.context["checkins"]],
+            [self.ocupado.id],
+        )
+        self.assertEqual(
+            [reserva.id for reserva in resposta.context["checkouts"]],
+            [checkout_pendente.id],
+        )
+        self.assertNotContains(resposta, "<form")
+        self.assertNotContains(resposta, "<button")
+
     def test_ocorrencia_e_registrada_por_quarto(self):
         url = reverse("registrar_ocorrencia")
         pagina = self.client.get(url)
