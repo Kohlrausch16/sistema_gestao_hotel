@@ -298,7 +298,7 @@ def checkin_page(request):
 
 def editar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id, ativo=True)
-    if reserva.status != 'A' or reserva.data_entrada < timezone.localdate():
+    if reserva.status != 'A' or reserva.data_entrada <= timezone.localdate():
         messages.error(request, "A reserva só pode ser editada antes do check-in enquanto estiver ativa.")
         return redirect('listar_reservas')
 
@@ -306,8 +306,8 @@ def editar_reserva(request, reserva_id):
 
     if request.method == "POST":
         if form.is_valid():
-            if form.cleaned_data["data_entrada"] < timezone.localdate():
-                form.add_error("data_entrada", "A entrada não pode ser anterior à data de hoje.")
+            if form.cleaned_data["data_entrada"] <= timezone.localdate():
+                form.add_error("data_entrada", "A entrada deve ser uma data futura.")
             else:
                 form.save()
                 messages.success(request, "Reserva atualizada com sucesso!")
@@ -326,7 +326,7 @@ def cancelar_reserva(request, reserva_id):
         messages.error(request, "Apenas reservas ativas podem ser canceladas.")
         return redirect('listar_reservas')
 
-    if reserva.data_entrada < timezone.localdate():
+    if reserva.data_entrada <= timezone.localdate():
         messages.error(request, "A reserva só pode ser cancelada antes do check-in.")
         return redirect('listar_reservas')
 

@@ -88,7 +88,7 @@
                                             </form>
                                         {% endif %}
 
-                                        {% if reserva.status == 'A' and reserva.data_entrada >= hoje %}
+                                        {% if reserva.status == 'A' and reserva.data_entrada > hoje %}
                                             <a href="{% url 'editar_reserva' reserva.id %}" class="botao-editar" aria-label="Editar reserva de {{ reserva.cliente }} no quarto {{ reserva.quarto.numero }}" title="Editar reserva">
                                                 <i class="fa-solid fa-pen" aria-hidden="true"></i>
                                             </a>
