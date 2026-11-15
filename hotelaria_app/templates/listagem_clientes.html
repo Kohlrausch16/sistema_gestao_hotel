@@ -50,7 +50,11 @@
                             <tr class="linha-cliente">
                                 <td class="nome-cliente">{{ cliente.nome }} {{ cliente.sobrenome }}</td>
                                 <td>{{ cliente.cpf }}</td>
-                                <td><span class="situacao-indisponivel" title="Informação ainda não disponível">—</span></td>
+                                <td>
+                                    <span class="status-cliente {% if cliente.hospedado %}status-cliente-hospedado{% else %}status-cliente-ausente{% endif %}">
+                                        {% if cliente.hospedado %}Sim{% else %}Não{% endif %}
+                                    </span>
+                                </td>
                                 <td>
                                     <a class="botao-editar-cliente" href="{% url 'editar_cliente' cliente.id %}" aria-label="Editar cliente {{ cliente.nome }} {{ cliente.sobrenome }}" title="Editar cliente">
                                         <i class="fa-solid fa-pen" aria-hidden="true"></i>

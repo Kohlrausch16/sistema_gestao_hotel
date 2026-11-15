@@ -30,7 +30,11 @@ def index(request):
 
 def listar_clientes(request):
 
-    clientes = Cliente.objects.all()
+    clientes = Cliente.objects.annotate(
+        hospedado=Exists(
+            Reserva.objects.filter(cliente_id=OuterRef('pk'), ativo=True, status='E')
+        )
+    )
 
     dados = {
         "clientes": clientes
