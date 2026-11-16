@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block arquivos_css %}
-    <link rel="stylesheet" href="{% static 'css/formulario.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/formulario.css' %}?v=3" />
 {% endblock %}
 
 {% block titulo_pagina %}
@@ -19,20 +19,21 @@
 
     {% csrf_token %}
 
-    <label class="funcionario-label" for="ocorrencia-quarto">Quarto:</label>
-    <select class="funcionario-campo" id="ocorrencia-quarto" name="quarto_id" required>
-        <option value="">Selecione o quarto</option>
-        {% for quarto in quartos %}
-            <option value="{{ quarto.id }}">
-                Quarto {{ quarto.numero }}
-            </option>
-        {% empty %}
-            <option value="" disabled>Nenhum quarto disponível</option>
-        {% endfor %}
-    </select>
+    <label class="funcionario-label" for="{{ formulario.quarto.id_for_label }}">Quarto:</label>
+    {{ formulario.quarto }}
+    {{ formulario.quarto.errors }}
 
-    <label class="funcionario-label" for="ocorrencia-descricao">Descrição:</label>
-    <textarea class="funcionario-campo" id="ocorrencia-descricao" name="descricao" rows="5" required></textarea>
+    <label class="funcionario-label" for="{{ formulario.descricao.id_for_label }}">Descrição:</label>
+    {{ formulario.descricao }}
+    {{ formulario.descricao.errors }}
+
+    <div class="funcionario-opcao-checkbox">
+        {{ formulario.manutencao }}
+        <label for="{{ formulario.manutencao.id_for_label }}">
+            {{ formulario.manutencao.label }}
+        </label>
+    </div>
+    {{ formulario.manutencao.errors }}
 
     <div class="funcionario-formulario-acoes">
 

@@ -15,7 +15,7 @@ from .models import Cliente, Quarto, Reserva, TarifaSazonal, TipoQuarto
 from .disponibilidade import quartos_disponiveis as buscar_quartos_disponiveis, reservas_ativas_em
 from .precificacao import calcular_preco_total
 from .sazonalidade import periodo_para_exibir, proximidade_tarifa
-from .forms import ClienteForm, ReservaForm, TarifaSazonalForm, TipoQuartoForm
+from .forms import ClienteForm, OcorrenciaForm, ReservaForm, TarifaSazonalForm, TipoQuartoForm
 from .forms import QuartoForm
 from .forms import EditarQuartoForm
 from django.contrib.auth.forms import UserCreationForm
@@ -498,25 +498,20 @@ def ativar_funcionario(request, id):
     return redirect('listar_funcionarios')
 
 def registrar_ocorrencia(request):
-    if request.method == 'POST':
-        quarto_id = request.POST.get('quarto_id')
-        descricao = request.POST.get('descricao')
+    formulario = OcorrenciaForm(request.POST or None)
 
-        quarto = get_object_or_404(Quarto, id=quarto_id, ativo=True)
+    if request.method == 'POST' and formulario.is_valid():
+        ocorrencia = formulario.save()
 
-        Ocorrencia.objects.create(
-            quarto=quarto,
-            descricao=descricao
-        )
+        if formulario.cleaned_data['manutencao']:
+            quarto = ocorrencia.quarto
+            quarto.status = 'M'
+            quarto.save(update_fields=['status'])
 
         messages.success(request, "Ocorrência registrada com sucesso!")
         return redirect('listar_ocorrencia')
 
-    quartos = Quarto.objects.filter(ativo=True).order_by('numero')
-    dados = {
-        'quartos': quartos
-    }
-    return render(request, 'registrar_ocorrencia.html', dados)
+    return render(request, 'registrar_ocorrencia.html', {'formulario': formulario})
 
 def listar_ocorrencia(request):
     ordem = request.GET.get('ordem')
@@ -544,6 +539,9 @@ def concluir_ocorrencia(request, ocorrencia_id):
     ocorrencia = get_object_or_404(Ocorrencia, id=ocorrencia_id)
     ocorrencia.concluida = True
     ocorrencia.save(update_fields=['concluida'])
+    if ocorrencia.quarto.status == 'M':
+        ocorrencia.quarto.status = 'D'
+        ocorrencia.quarto.save(update_fields=['status'])
     messages.success(request, "Ocorrência marcada como concluída.")
     return redirect('listar_ocorrencia')
 
