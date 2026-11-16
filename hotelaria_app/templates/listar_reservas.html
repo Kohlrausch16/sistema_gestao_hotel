@@ -1,5 +1,5 @@
 {% extends "partials/_base.html" %}
-{% load static %}
+{% load static permissoes %}
 
 {% block title %}Reservas{% endblock %}
 
@@ -8,6 +8,8 @@
 {% endblock %}
 
 {% block titulo_pagina %}
+    {% pode_acessar 'criar_reserva' as pode_criar_reserva %}
+    {% pode_acessar 'checkin_page' as pode_ver_checkin %}
     <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
     <div class="cabecalho-quartos">
         <div>
@@ -15,17 +17,25 @@
             <p class="subtitulo-quartos">Consulte as reservas cadastradas no hotel.</p>
         </div>
         <div class="acoes-quarto">
-            <a class="botao-novo-quarto" href="{% url 'criar_reserva' %}">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i> Criar reserva
-            </a>
-            <a class="botao-novo-quarto" href="{% url 'checkin_page' %}">
-                <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Check-in
-            </a>
+            {% if pode_criar_reserva %}
+                <a class="botao-novo-quarto" href="{% url 'criar_reserva' %}">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Criar reserva
+                </a>
+            {% endif %}
+            {% if pode_ver_checkin %}
+                <a class="botao-novo-quarto" href="{% url 'checkin_page' %}">
+                    <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Check-in
+                </a>
+            {% endif %}
         </div>
     </div>
 {% endblock %}
 
 {% block main %}
+    {% pode_acessar 'criar_reserva' as pode_criar_reserva %}
+    {% pode_acessar 'editar_reserva' as pode_editar_reserva %}
+    {% pode_acessar 'cancelar_reserva' as pode_cancelar_reserva %}
+    {% pode_acessar 'checkout' as pode_checkout %}
     <form class="pesquisa-quartos pesquisa-reservas" method="get" action="{% url 'listar_reservas' %}">
         <input
             type="search"
@@ -61,7 +71,9 @@
                             <th scope="col">Saída</th>
                             <th scope="col">Preço total</th>
                             <th scope="col">Status</th>
-                            <th scope="col">Ações</th>
+                            {% if pode_editar_reserva or pode_cancelar_reserva or pode_checkout %}
+                                <th scope="col">Ações</th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody>
@@ -77,30 +89,36 @@
                                         {{ reserva.get_status_display }}
                                     </span>
                                 </td>
-                                <td>
-                                    <div class="acoes-quarto">
-                                        {% if reserva.status == 'E' %}
-                                            <form action="{% url 'checkout' reserva.id %}" method="post" class="form-excluir-quarto">
-                                                {% csrf_token %}
-                                                <button type="submit" class="botao-checkout" aria-label="Fazer check-out da reserva de {{ reserva.cliente }} no quarto {{ reserva.quarto.numero }}" title="Check-out">
-                                                    CHECKOUT
-                                                </button>
-                                            </form>
-                                        {% endif %}
+                                {% if pode_editar_reserva or pode_cancelar_reserva or pode_checkout %}
+                                    <td>
+                                        <div class="acoes-quarto">
+                                            {% if reserva.status == 'E' and pode_checkout %}
+                                                <form action="{% url 'checkout' reserva.id %}" method="post" class="form-excluir-quarto">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="botao-checkout" aria-label="Fazer check-out da reserva de {{ reserva.cliente }} no quarto {{ reserva.quarto.numero }}" title="Check-out">
+                                                        CHECKOUT
+                                                    </button>
+                                                </form>
+                                            {% endif %}
 
-                                        {% if reserva.status == 'A' and reserva.data_entrada > hoje %}
-                                            <a href="{% url 'editar_reserva' reserva.id %}" class="botao-editar" aria-label="Editar reserva de {{ reserva.cliente }} no quarto {{ reserva.quarto.numero }}" title="Editar reserva">
-                                                <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                                            </a>
-                                            <form action="{% url 'cancelar_reserva' reserva.id %}" method="post" class="form-excluir-quarto">
-                                                {% csrf_token %}
-                                                <button type="submit" class="botao-excluir" aria-label="Cancelar reserva de {{ reserva.cliente }} no quarto {{ reserva.quarto.numero }}" title="Cancelar reserva">
-                                                    <i class="fa-solid fa-ban" aria-hidden="true"></i>
-                                                </button>
-                                            </form>
-                                        {% endif %}
-                                    </div>
-                                </td>
+                                            {% if reserva.status == 'A' and reserva.data_entrada > hoje %}
+                                                {% if pode_editar_reserva %}
+                                                    <a href="{% url 'editar_reserva' reserva.id %}" class="botao-editar" aria-label="Editar reserva de {{ reserva.cliente }} no quarto {{ reserva.quarto.numero }}" title="Editar reserva">
+                                                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                                    </a>
+                                                {% endif %}
+                                                {% if pode_cancelar_reserva %}
+                                                    <form action="{% url 'cancelar_reserva' reserva.id %}" method="post" class="form-excluir-quarto">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="botao-excluir" aria-label="Cancelar reserva de {{ reserva.cliente }} no quarto {{ reserva.quarto.numero }}" title="Cancelar reserva">
+                                                            <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                {% endif %}
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -115,8 +133,10 @@
                     <a href="{% url 'listar_reservas' %}">Limpar filtros</a>
                 {% else %}
                     <h3>Nenhuma reserva cadastrada</h3>
-                    <p>Crie a primeira reserva para vê-la nesta lista.</p>
-                    <a href="{% url 'criar_reserva' %}">Criar reserva</a>
+                    {% if pode_criar_reserva %}
+                        <p>Crie a primeira reserva para vê-la nesta lista.</p>
+                        <a href="{% url 'criar_reserva' %}">Criar reserva</a>
+                    {% endif %}
                 {% endif %}
             </div>
         {% endif %}

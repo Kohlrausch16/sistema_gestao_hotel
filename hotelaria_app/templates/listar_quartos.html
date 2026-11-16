@@ -1,5 +1,5 @@
 {% extends "partials/_base.html" %}
-{% load static %}
+{% load static permissoes %}
 
 {% block title %}Quartos{% endblock %}
 
@@ -8,19 +8,25 @@
 {% endblock %}
 
 {% block titulo_pagina %}
+    {% pode_acessar 'cadastrar_quarto' as pode_cadastrar_quarto %}
     <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
     <div class="cabecalho-quartos">
         <div>
             <h1 class="titulo-pagina">QUARTOS</h1>
             <p class="subtitulo-quartos">Consulte os quartos cadastrados no hotel.</p>
         </div>
-        <a class="botao-novo-quarto" href="{% url 'cadastrar_quarto' %}">
-            <i class="fa-solid fa-plus" aria-hidden="true"></i> Cadastrar quarto
-        </a>
+        {% if pode_cadastrar_quarto %}
+            <a class="botao-novo-quarto" href="{% url 'cadastrar_quarto' %}">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Cadastrar quarto
+            </a>
+        {% endif %}
     </div>
 {% endblock %}
 
 {% block main %}
+    {% pode_acessar 'cadastrar_quarto' as pode_cadastrar_quarto %}
+    {% pode_acessar 'editar_quarto' as pode_editar_quarto %}
+    {% pode_acessar 'excluir_quarto' as pode_excluir_quarto %}
     <form class="pesquisa-quartos" method="get">
         <input
             type="search"
@@ -66,15 +72,19 @@
                                 </td>
                                 <td>
                                     <div class="acoes-quarto">
-                                        <a href="{% url 'editar_quarto' quarto.id %}" class="botao-editar" aria-label="Editar quarto {{ quarto.numero }}" title="Editar quarto">
-                                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                                        </a>
-                                        <form action="{% url 'excluir_quarto' quarto.id %}" method="post" class="form-excluir-quarto">
-                                            {% csrf_token %}
-                                            <button type="submit" class="botao-excluir" aria-label="Excluir quarto {{ quarto.numero }}" title="Excluir quarto">
-                                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
-                                            </button>
-                                        </form>
+                                        {% if pode_editar_quarto %}
+                                            <a href="{% url 'editar_quarto' quarto.id %}" class="botao-editar" aria-label="Editar quarto {{ quarto.numero }}" title="Editar quarto">
+                                                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                            </a>
+                                        {% endif %}
+                                        {% if pode_excluir_quarto %}
+                                            <form action="{% url 'excluir_quarto' quarto.id %}" method="post" class="form-excluir-quarto">
+                                                {% csrf_token %}
+                                                <button type="submit" class="botao-excluir" aria-label="Excluir quarto {{ quarto.numero }}" title="Excluir quarto">
+                                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>
@@ -91,8 +101,10 @@
                     <a href="{% url 'listar_quartos' %}">Limpar pesquisa</a>
                 {% else %}
                     <h3>Nenhum quarto cadastrado</h3>
-                    <p>Cadastre o primeiro quarto para vê-lo nesta lista.</p>
-                    <a href="{% url 'cadastrar_quarto' %}">Cadastrar quarto</a>
+                    {% if pode_cadastrar_quarto %}
+                        <p>Cadastre o primeiro quarto para vê-lo nesta lista.</p>
+                        <a href="{% url 'cadastrar_quarto' %}">Cadastrar quarto</a>
+                    {% endif %}
                 {% endif %}
             </div>
         {% endif %}
