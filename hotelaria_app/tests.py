@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Cliente, Quarto, Reserva, TipoQuarto, TarifaSazonal
+from .models import Cliente, Ocorrencia, Quarto, Reserva, TipoQuarto, TarifaSazonal
 from .precificacao import calcular_preco_total
 
 
@@ -91,14 +91,61 @@ class DisponibilidadeQuartosTests(TestCase):
         url = reverse("registrar_ocorrencia")
         pagina = self.client.get(url)
         resposta = self.client.post(url, {
-            "quarto_id": self.livre.id,
+            "quarto": self.livre.id,
             "descricao": "Lâmpada queimada",
         })
 
-        self.assertContains(pagina, 'name="quarto_id"')
+        self.assertContains(pagina, 'name="quarto"')
+        self.assertContains(pagina, 'name="manutencao"')
         self.assertRedirects(resposta, reverse("listar_ocorrencia"))
         ocorrencia = self.livre.ocorrencia_set.get()
         self.assertEqual(ocorrencia.descricao, "Lâmpada queimada")
+        self.livre.refresh_from_db()
+        self.assertEqual(self.livre.status, "D")
+
+    def test_ocorrencia_marcada_coloca_quarto_em_manutencao(self):
+        resposta = self.client.post(reverse("registrar_ocorrencia"), {
+            "quarto": self.livre.id,
+            "descricao": "Lâmpada queimada",
+            "manutencao": "on",
+        })
+
+        self.assertRedirects(resposta, reverse("listar_ocorrencia"))
+        self.livre.refresh_from_db()
+        self.assertEqual(self.livre.status, "M")
+
+    def test_ocorrencia_nao_pode_marcar_manutencao_com_quarto_ocupado(self):
+        Reserva.objects.create(
+            cliente=self.cliente,
+            quarto=self.livre,
+            data_entrada=date(2026, 11, 9),
+            data_saida=date(2026, 11, 11),
+            status="E",
+        )
+
+        resposta = self.client.post(reverse("registrar_ocorrencia"), {
+            "quarto": self.livre.id,
+            "descricao": "Lâmpada queimada",
+            "manutencao": "on",
+        })
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, "Não é possível enviar para manutenção um quarto ocupado.")
+        self.assertEqual(self.livre.ocorrencia_set.count(), 0)
+        self.livre.refresh_from_db()
+        self.assertEqual(self.livre.status, "D")
+
+    def test_concluir_ocorrencia_libera_quarto_em_manutencao(self):
+        ocorrencia = Ocorrencia.objects.create(
+            quarto=self.manutencao,
+            descricao="Conserto concluído",
+        )
+
+        resposta = self.client.post(reverse("concluir_ocorrencia", args=[ocorrencia.id]))
+
+        self.assertRedirects(resposta, reverse("listar_ocorrencia"))
+        self.manutencao.refresh_from_db()
+        self.assertEqual(self.manutencao.status, "D")
 
     def test_links_de_ordenacao_das_ocorrencias_preservam_a_busca(self):
         for nome_url in ("listar_ocorrencia", "ocorrencias_concluidas"):

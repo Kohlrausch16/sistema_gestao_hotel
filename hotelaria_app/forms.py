@@ -265,6 +265,27 @@ class ReservaForm(forms.ModelForm):
         }
 
 class OcorrenciaForm(forms.ModelForm):
+    manutencao = forms.BooleanField(
+        label='Enviar quarto para manutenção',
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['quarto'].queryset = Quarto.objects.filter(ativo=True).order_by('numero')
+        self.fields['quarto'].label_from_instance = lambda quarto: f"Quarto {quarto.numero}"
+
+    def clean(self):
+        dados = super().clean()
+        quarto = dados.get('quarto')
+        if (
+            dados.get('manutencao')
+            and quarto
+            and Reserva.objects.filter(quarto=quarto, ativo=True, status='E').exists()
+        ):
+            self.add_error('manutencao', 'Não é possível enviar para manutenção um quarto ocupado.')
+        return dados
+
     class Meta:
         model = Ocorrencia
         fields = ['quarto', 'descricao']
