@@ -50,3 +50,8 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
 ]
+
+# Protege as rotas do sistema; login e logout mantêm seus próprios fluxos.
+for rota in urlpatterns:
+    if rota.name not in {'login', 'logout'}:
+        rota.callback = views.regra_de_acesso(rota.callback)

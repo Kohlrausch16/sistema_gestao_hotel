@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.utils import timezone
@@ -19,7 +19,7 @@ from .sazonalidade import periodo_para_exibir, proximidade_tarifa
 from .forms import ClienteForm, ReservaForm, TarifaSazonalForm, TipoQuartoForm
 from .forms import QuartoForm
 from .forms import EditarQuartoForm
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import Funcionario
 from .forms import CadastroForm, FuncionarioForm
 from .models import Ocorrencia, Relatorio
@@ -43,6 +43,44 @@ def gerente_ou_administrador_required(view):
             raise PermissionDenied
         return view(request, *args, **kwargs)
 
+    return wrapper
+
+def regra_de_acesso(view):
+    @login_required
+    @wraps(view)
+    def wrapper(request, *args, **kwargs):
+        cargo = Funcionario.objects.filter(usuario=request.user).values_list('cargo', flat=True).first()
+        acessos = {
+            'recepcionista': [
+                'index', 'listar_clientes', 'cadastrar_cliente', 'editar_cliente',
+                'listar_quartos', 'cadastrar_quarto', 'editar_quarto',
+                'excluir_quarto', 'quartos_disponiveis',
+                'listar_reservas', 'criar_reserva', 'editar_reserva',
+                'cancelar_reserva', 'checkin_page', 'checkin', 'checkout',
+                'checkincheckout',
+                'listar_ocorrencia', 'registrar_ocorrencia',
+                'visualizar_ocorrencia', 'concluir_ocorrencia',
+                'ocorrencias_concluidas', 'reabrir_ocorrencia',
+                'gerar_relatorio',
+            ],
+            'cozinheiro': [
+                'index', 'listar_reservas', 'quartos_disponiveis',
+                'listar_ocorrencia', 'registrar_ocorrencia',
+                'visualizar_ocorrencia', 'concluir_ocorrencia',
+                'ocorrencias_concluidas', 'reabrir_ocorrencia',
+            ],
+            'camareira': [
+                'index', 'listar_quartos', 'editar_quarto',
+                'quartos_disponiveis',
+                'listar_ocorrencia', 'registrar_ocorrencia',
+                'visualizar_ocorrencia', 'concluir_ocorrencia',
+                'ocorrencias_concluidas', 'reabrir_ocorrencia',
+                'listar_reservas',
+            ],
+        }
+        if not (request.user.is_superuser or cargo == 'gerente') and view.__name__ not in acessos.get(cargo, []):
+            raise PermissionDenied
+        return view(request, *args, **kwargs)
     return wrapper
 
 def index(request):
@@ -765,21 +803,23 @@ def checkincheckout(request):
     return render(request, "checkin_checkout.html", dados)
 
 def login_view(request):
-    if request.method == 'POST':
-        form = CadastroForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password1']
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('index')
-            else:
-                messages.error(request, "Credenciais inválidas.")
-    else:
-        form = CadastroForm()
-    return render(request, 'login.html', {'form': form})
+    if request.user.is_authenticated:
+        return redirect('index')
 
+    form = AuthenticationForm(request, data=request.POST or None)
+    destino = request.POST.get('next') or request.GET.get('next', '')
+    if request.method == 'POST' and form.is_valid():
+        login(request, form.get_user())
+        if destino and url_has_allowed_host_and_scheme(
+            destino, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+        ):
+            return redirect(destino)
+        return redirect('index')
+
+    return render(request, 'login.html', {'form': form, 'next': destino})
+
+
+@require_POST
 def logout_view(request):
     logout(request)
     messages.success(request, "Logout realizado com sucesso.")
