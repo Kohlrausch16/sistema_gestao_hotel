@@ -108,6 +108,7 @@ class Ocorrencia(models.Model):
     descricao = models.TextField()
     data_ocorrencia = models.DateTimeField(auto_now_add=True)
     concluida = models.BooleanField(default=False)
+    campos = models.JSONField(default=list)
 
     def __str__(self):
         return f"Ocorrência para o quarto {self.quarto.numero} em {self.data_ocorrencia}"

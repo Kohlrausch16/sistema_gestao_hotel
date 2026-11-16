@@ -227,6 +227,10 @@ label{
 	margin: 0;
 }
 
+.funcionario-formulario .campo-formulario {
+	flex: 0 0 auto;
+}
+
 .funcionario-campo,
 .funcionario-formulario input:not([type="hidden"]),
 .funcionario-formulario select,
@@ -250,6 +254,39 @@ label{
 .funcionario-formulario textarea:focus {
 	border-color: #3B82F6;
 	box-shadow: 0 0 0 2px #3B82F633;
+}
+
+.funcionario-opcao-checkbox {
+	align-items: center;
+	display: flex;
+	gap: 0.55rem;
+}
+
+.funcionario-opcao-checkbox input[type="checkbox"] {
+	accent-color: #3B82F6;
+	flex: 0 0 1rem;
+	height: 1rem;
+	margin: 0;
+	min-height: 0;
+	padding: 0;
+	width: 1rem;
+}
+
+.funcionario-opcao-checkbox input[type="checkbox"]:focus-visible {
+	box-shadow: none;
+	outline: 2px solid #3B82F6;
+	outline-offset: 2px;
+}
+
+.funcionario-opcao-checkbox label {
+	cursor: pointer;
+}
+
+.funcionario-formulario .errorlist {
+	color: #B91C1C;
+	font: 0.8rem/1.4 "Inter", sans-serif;
+	margin: -0.5rem 0 0;
+	padding-left: 1.1rem;
 }
 
 .funcionario-formulario-acoes,
