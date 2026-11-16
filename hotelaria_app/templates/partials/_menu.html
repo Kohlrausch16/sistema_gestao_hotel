@@ -1,7 +1,31 @@
-{% load static%}
+{% load static %}
 
 <header>
-    <a href="{% url 'index' %}">
-        <img src={% static "assets/img/logo-light-mode.png" %} class="logo-header" alt="Logo sistema"/>
+    <a href="{% url 'index' %}" aria-label="Página inicial">
+        <img src="{% static 'assets/img/logo-light-mode.png' %}" class="logo-header" alt="Logo sistema">
     </a>
+
+    {% if user.is_authenticated %}
+        <div class="header-usuario">
+            <div class="header-usuario-dados">
+                <span class="header-usuario-nome">
+                    {% if user.funcionario %}{{ user.funcionario.nome }} - {{ user.funcionario.get_cargo_display }}{% elif user.is_superuser %}{{ user.get_full_name|default:user.username }} - Administrador{% else %}{{ user.get_full_name|default:user.username }}{% endif %}
+                </span>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="header-logout" type="submit">&lt; Logout</button>
+                </form>
+            </div>
+            <span class="header-avatar" aria-hidden="true">
+                <svg viewBox="0 0 48 48" focusable="false" aria-hidden="true">
+                    <circle cx="24" cy="24" r="21" fill="#94a3b8" />
+                    <circle cx="24" cy="18" r="8" fill="#f8fafc" />
+                    <path d="M9 36c2.5-7 8-10.5 15-10.5S36.5 29 39 36a20.8 20.8 0 0 1-30 0Z" fill="#f8fafc" />
+                </svg>
+                <span class="header-avatar-status"></span>
+            </span>
+        </div>
+    {% else %}
+        <a class="header-login" href="{% url 'login' %}">Login</a>
+    {% endif %}
 </header>

@@ -34,14 +34,95 @@ header{
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    padding: 1rem 1.5rem;
+    padding: 0.5rem 1.5rem;
     box-sizing: border-box;
     background-color: #FFFFFF;
     border-bottom: 1px solid #E2E8F0;
+    min-height: 72px;
+    gap: 1rem;
 }
 
 .logo-header{
-    width: clamp(10px, 6rem, 100px);
+    width: 120px;
+}
+
+.header-usuario{
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    font-family: "Inter", sans-serif;
+}
+
+.header-usuario-dados{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.3rem;
+    min-width: 0;
+    text-align: right;
+}
+
+.header-usuario-nome{
+    color: #1e293b;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.header-usuario-dados form{
+    margin: 0;
+}
+
+.header-logout,
+.header-login{
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.header-logout:hover,
+.header-login:hover{
+    color: #334155;
+}
+
+.header-logout:focus-visible,
+.header-login:focus-visible{
+    outline: 2px solid #3b82f6;
+    outline-offset: 4px;
+}
+
+.header-avatar{
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    flex: none;
+    border: 3px solid #e2e8f0;
+    border-radius: 50%;
+    background: #f1f5f9;
+}
+
+.header-avatar svg{
+    width: 30px;
+    height: 30px;
+}
+
+.header-avatar-status{
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 15px;
+    height: 15px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: #10b981;
 }
 
 /*  --- ESTILIZAÇÃO MENU LATERAL --- */
@@ -147,6 +228,48 @@ aside a{
 }
 
 @media(max-width: 600px){
+    header{
+        min-height: 64px;
+        padding: 0.5rem 1rem;
+    }
+
+    .logo-header{
+        width: 96px;
+    }
+
+    .header-usuario{
+        gap: 0.75rem;
+    }
+
+    .header-usuario-dados{
+        gap: 0.4rem;
+    }
+
+    .header-usuario-nome{
+        font-size: 0.85rem;
+    }
+
+    .header-logout,
+    .header-login{
+        font-size: 0.8rem;
+    }
+
+    .header-avatar{
+        width: 42px;
+        height: 42px;
+        border-width: 3px;
+    }
+
+    .header-avatar svg{
+        width: 26px;
+        height: 26px;
+    }
+
+    .header-avatar-status{
+        width: 13px;
+        height: 13px;
+    }
+
     main{
         flex-direction: column;
     }

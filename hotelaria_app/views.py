@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.utils import timezone
@@ -762,3 +763,24 @@ def checkincheckout(request):
     }
 
     return render(request, "checkin_checkout.html", dados)
+
+def login_view(request):
+    if request.method == 'POST':
+        form = CadastroForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password1']
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('index')
+            else:
+                messages.error(request, "Credenciais inválidas.")
+    else:
+        form = CadastroForm()
+    return render(request, 'login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, "Logout realizado com sucesso.")
+    return redirect('login')
