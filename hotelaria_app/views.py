@@ -23,6 +23,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import Funcionario
 from .forms import CadastroForm, FuncionarioForm
 from .models import Ocorrencia, Relatorio
+from .pode_acessar import pode_acessar
 
 from functools import wraps
 from django.contrib.auth.decorators import login_required
@@ -49,36 +50,7 @@ def regra_de_acesso(view):
     @login_required
     @wraps(view)
     def wrapper(request, *args, **kwargs):
-        cargo = Funcionario.objects.filter(usuario=request.user).values_list('cargo', flat=True).first()
-        acessos = {
-            'recepcionista': [
-                'index', 'listar_clientes', 'cadastrar_cliente', 'editar_cliente',
-                'listar_quartos', 'cadastrar_quarto', 'editar_quarto',
-                'excluir_quarto', 'quartos_disponiveis',
-                'listar_reservas', 'criar_reserva', 'editar_reserva',
-                'cancelar_reserva', 'checkin_page', 'checkin', 'checkout',
-                'checkincheckout',
-                'listar_ocorrencia', 'registrar_ocorrencia',
-                'visualizar_ocorrencia', 'concluir_ocorrencia',
-                'ocorrencias_concluidas', 'reabrir_ocorrencia',
-                'gerar_relatorio',
-            ],
-            'cozinheiro': [
-                'index', 'listar_reservas', 'quartos_disponiveis',
-                'listar_ocorrencia', 'registrar_ocorrencia',
-                'visualizar_ocorrencia', 'concluir_ocorrencia',
-                'ocorrencias_concluidas', 'reabrir_ocorrencia',
-            ],
-            'camareira': [
-                'index', 'listar_quartos', 'editar_quarto',
-                'quartos_disponiveis',
-                'listar_ocorrencia', 'registrar_ocorrencia',
-                'visualizar_ocorrencia', 'concluir_ocorrencia',
-                'ocorrencias_concluidas', 'reabrir_ocorrencia',
-                'listar_reservas',
-            ],
-        }
-        if not (request.user.is_superuser or cargo == 'gerente') and view.__name__ not in acessos.get(cargo, []):
+        if not pode_acessar(request.user, view.__name__):
             raise PermissionDenied
         return view(request, *args, **kwargs)
     return wrapper
