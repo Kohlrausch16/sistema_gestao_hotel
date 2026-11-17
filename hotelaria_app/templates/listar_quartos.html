@@ -9,7 +9,6 @@
 
 {% block titulo_pagina %}
     {% pode_acessar 'cadastrar_quarto' as pode_cadastrar_quarto %}
-    <button class="botao-retornar item-navegacao" type="button">&lt; Voltar</button>
     <div class="cabecalho-quartos">
         <div>
             <h1 class="titulo-pagina">QUARTOS</h1>
@@ -50,6 +49,7 @@
                         <tr>
                             <th scope="col">Número</th>
                             <th scope="col">Tipo</th>
+                            <th scope="col">Capacidade</th>
                             <th scope="col">Status</th>
                             <th scope="col">Reservas</th>
                             <th scope="col">Ações</th>
@@ -60,6 +60,7 @@
                             <tr>
                                 <td class="numero-quarto">{{ quarto.numero }}</td>
                                 <td>{{ quarto.tipo }}</td>
+                                <td>{{ quarto.tipo.capacidade }} pessoa{{ quarto.tipo.capacidade|pluralize }}</td>
                                 <td>
                                     <span class="status-quarto status-{{ quarto.status_atual|lower }}">
                                         {{ quarto.status_atual_display }}

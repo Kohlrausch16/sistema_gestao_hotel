@@ -1,101 +1,76 @@
 {% extends "partials/_base.html" %}
-{% load static %}
+{% load static permissoes %}
 
+{% block title %}Ocorrências{% endblock %}
 {% block arquivos_css %}
-    <link rel="stylesheet" href="{% static 'css/formulario.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/listar_quartos.css' %}">
+    <link rel="stylesheet" href="{% static 'css/gestao_paginas.css' %}">
 {% endblock %}
 
 {% block titulo_pagina %}
-
-<button class="botao-retornar funcionario-botao-retornar" type="button" onclick="history.back()">Voltar</button>
-
-<h1 class="funcionario-titulo-pagina">LISTA DE OCORRÊNCIAS</h1>
-
+    {% pode_acessar 'registrar_ocorrencia' as pode_registrar %}
+    <div class="cabecalho-quartos">
+        <div>
+            <h1 class="titulo-pagina">OCORRÊNCIAS</h1>
+            <p class="subtitulo-quartos">Acompanhe as ocorrências pendentes do hotel.</p>
+        </div>
+        {% if pode_registrar %}
+            <a class="botao-novo-quarto" href="{% url 'registrar_ocorrencia' %}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Registrar ocorrência</a>
+        {% endif %}
+    </div>
 {% endblock %}
 
 {% block main %}
-    <section class="funcionario-pagina funcionario-pagina-lista">
-
-    <div class="funcionario-busca">
-        <form class="funcionario-formulario funcionario-formulario-pesquisa" method="GET">
-            <input
-                class="funcionario-campo"
-                type="text"
-                name="pesquisar_quarto"
-                placeholder="Pesquisar número do quarto"
-                value="{{ pesquisar_quarto }}"
-            >
-            <button class="funcionario-botao funcionario-botao-primario" type="submit">Pesquisar</button>
-        </form>
-    </div>
-
-    <h2 class="funcionario-subtitulo">Ocorrências</h2>
-
-    <div class="funcionario-acoes-lista">
-
-        
-
-    <a class="funcionario-botao funcionario-botao-primario" href="{% url 'registrar_ocorrencia' %}">
-        Registrar Ocorrência
-    </a>
-
-
-    <a class="funcionario-botao funcionario-botao-secundario" href="{% url 'ocorrencias_concluidas' %}">
-        Ocorrências Concluídas
-    </a>
-
-    </div>
-
-    <div class="funcionario-tabela-container">
-        <table class="funcionario-tabela">
-
-            <thead>
-                <tr>
-                    <th>Quarto</th>
-                    <th>Descrição</th>
-                    <th>
-                        Data da ocorrência
-                        <a class="funcionario-ordenacao" aria-label="Mais antigas primeiro" href="?ordem=crescente&amp;pesquisar_quarto={{ pesquisar_quarto }}">↑</a>
-                        <a class="funcionario-ordenacao" aria-label="Mais recentes primeiro" href="?ordem=decrescente&amp;pesquisar_quarto={{ pesquisar_quarto }}">↓</a>
-                    </th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for ocorrencia in ocorrencias %}
-
-                    <tr>
-                        <td>{{ ocorrencia.quarto.numero }}</td>
-                        <td>{{ ocorrencia.descricao }}</td>
-                        <td>{{ ocorrencia.data_ocorrencia|date:"d/m/Y H:i" }}</td>
-                        <td>
-                            <form class="formulario-acao-tabela" method="post" action="{% url 'concluir_ocorrencia' ocorrencia.id %}">
-                                {% csrf_token %}
-                                <button class="funcionario-botao funcionario-botao-secundario" type="submit">
-                                    Concluir
-                                </button>
-                            </form>
-                            <a class="funcionario-botao funcionario-botao-secundario" href="{% url 'visualizar_ocorrencia' ocorrencia.id %}">
-                                Visualizar
-                            </a>
-                        </td>
-                    </tr>
-                    
-
-                {% empty %}
-
-                    <tr>
-                        <td colspan="4">Nenhuma ocorrência pendente encontrada.</td>
-                    </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-    </div>
+    {% pode_acessar 'concluir_ocorrencia' as pode_concluir %}
+    {% pode_acessar 'visualizar_ocorrencia' as pode_visualizar %}
+    <form class="pesquisa-quartos" method="get" action="{% url 'listar_ocorrencia' %}" role="search">
+        <input type="search" name="pesquisar_quarto" value="{{ pesquisar_quarto }}" placeholder="Pesquisar número do quarto" aria-label="Pesquisar número do quarto">
+        <button type="submit">Pesquisar</button>
+    </form>
+    <section class="painel-quartos" aria-label="Lista de ocorrências">
+        <div class="painel-cabecalho">
+            <h2>Ocorrências pendentes</h2>
+            <span class="contador-quartos">{{ ocorrencias|length }} ocorrência{{ ocorrencias|length|pluralize }}</span>
+        </div>
+        {% if ocorrencias %}
+            <div class="tabela-rolagem">
+                <table class="tabela-quartos tabela-ocorrencias">
+                    <thead><tr>
+                        <th scope="col">Quarto</th>
+                        <th scope="col">Descrição</th>
+                        <th scope="col">Data da ocorrência <span class="ordenacao-lista"><a href="?ordem=crescente&amp;pesquisar_quarto={{ pesquisar_quarto|urlencode }}" aria-label="Mais antigas primeiro">↑</a><a href="?ordem=decrescente&amp;pesquisar_quarto={{ pesquisar_quarto|urlencode }}" aria-label="Mais recentes primeiro">↓</a></span></th>
+                        {% if pode_concluir or pode_visualizar %}<th scope="col">Ações</th>{% endif %}
+                    </tr></thead>
+                    <tbody>
+                        {% for ocorrencia in ocorrencias %}
+                            <tr>
+                                <td class="numero-quarto">{{ ocorrencia.quarto.numero }}</td>
+                                <td class="descricao-ocorrencia">{{ ocorrencia.descricao }}</td>
+                                <td>{{ ocorrencia.data_ocorrencia|date:"d/m/Y H:i" }}</td>
+                                {% if pode_concluir or pode_visualizar %}
+                                    <td><div class="acoes-quarto">
+                                        {% if pode_visualizar %}<a class="botao-editar" href="{% url 'visualizar_ocorrencia' ocorrencia.id %}" aria-label="Visualizar ocorrência do quarto {{ ocorrencia.quarto.numero }}" title="Visualizar ocorrência"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>{% endif %}
+                                        {% if pode_concluir %}
+                                            <form class="form-excluir-quarto" method="post" action="{% url 'concluir_ocorrencia' ocorrencia.id %}">
+                                                {% csrf_token %}
+                                                <button class="botao-concluir-gestao" type="submit" aria-label="Concluir ocorrência do quarto {{ ocorrencia.quarto.numero }}" title="Concluir ocorrência"><i class="fa-solid fa-check" aria-hidden="true"></i></button>
+                                            </form>
+                                        {% endif %}
+                                    </div></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="lista-vazia">
+                <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+                <h3>{% if pesquisar_quarto %}Nenhuma ocorrência encontrada{% else %}Nenhuma ocorrência pendente{% endif %}</h3>
+                <p>{% if pesquisar_quarto %}Tente pesquisar outro quarto.{% else %}As ocorrências pendentes aparecerão aqui.{% endif %}</p>
+                {% if pesquisar_quarto %}<a href="{% url 'listar_ocorrencia' %}">Limpar pesquisa</a>{% endif %}
+            </div>
+        {% endif %}
+        <div class="painel-rodape"><a class="botao-secundario-gestao" href="{% url 'ocorrencias_concluidas' %}">Ver ocorrências concluídas</a></div>
     </section>
-
 {% endblock %}

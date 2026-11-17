@@ -76,7 +76,7 @@ def index(request):
 
 def listar_clientes(request):
 
-    clientes = Cliente.objects.annotate(
+    clientes = Cliente.objects.filter(ativo=True).annotate(
         hospedado=Exists(
             Reserva.objects.filter(cliente_id=OuterRef('pk'), ativo=True, status='E')
         )
@@ -112,7 +112,7 @@ def cadastrar_cliente(request):
     })
 
 def editar_cliente(request, cliente_id):
-    cliente = get_object_or_404(Cliente, id=cliente_id)
+    cliente = get_object_or_404(Cliente, id=cliente_id, ativo=True)
     form = ClienteForm(request.POST or None, instance=cliente)
 
     if request.method == "POST":
@@ -130,6 +130,15 @@ def editar_cliente(request, cliente_id):
     }
 
     return render(request, "editar_cliente.html", dados)
+
+
+@require_POST
+def excluir_cliente(request, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id, ativo=True)
+    cliente.ativo = False
+    cliente.save(update_fields=["ativo"])
+    messages.success(request, "Cliente excluído com sucesso!")
+    return redirect("listagem_clientes")
 
 def cadastrar_quarto(request):
     form = QuartoForm(request.POST or None)
@@ -637,8 +646,8 @@ def editar_tipo_quarto(request, tipo_id):
 @require_POST
 def excluir_tipo_quarto(request, tipo_id):
     tipo_quarto = get_object_or_404(TipoQuarto, id=tipo_id, ativo=True)
-    if Quarto.objects.filter(tipo=tipo_quarto).exists():
-        messages.error(request, "Não é possível excluir este tipo: há quartos cadastrados com ele.")
+    if Quarto.objects.filter(tipo=tipo_quarto, ativo=True).exists():
+        messages.error(request, "Não é possível excluir este tipo: há quartos ativos vinculados a ele.")
         return redirect('listar_tipos_quarto')
 
     tipo_quarto.ativo = False

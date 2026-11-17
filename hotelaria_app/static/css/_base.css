@@ -186,6 +186,10 @@ aside li > a{
   pointer-events: none;
 }
 
+.menu-lateral-container .item-navegacao.menu-ativo::before {
+  width: 10px;
+}
+
 .menu-lateral-container .item-navegacao:hover{
     cursor: pointer;
     background-color: #E2E8F0;

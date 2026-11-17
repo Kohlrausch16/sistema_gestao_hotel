@@ -13,13 +13,17 @@ from .precificacao import calcular_preco_total
 
 class DisponibilidadeQuartosTests(TestCase):
     def setUp(self):
+        self.client.force_login(self.usuario_teste)
         relogio_formulario = patch("hotelaria_app.forms.timezone")
         relogio_formulario.start().localdate.return_value = date(2026, 11, 9)
         self.addCleanup(relogio_formulario.stop)
 
     @classmethod
     def setUpTestData(cls):
-        cls.tipo_simples = TipoQuarto.objects.create(tipo="Simples", preco_diaria="100.00")
+        cls.usuario_teste = User.objects.create_superuser(
+            "usuario_teste", "teste@example.com", "senha-forte"
+        )
+        cls.tipo_simples = TipoQuarto.objects.create(tipo="Simples", preco_diaria="100.00", capacidade=1)
         cls.cliente = Cliente.objects.create(
             nome="Ana",
             sobrenome="Silva",
@@ -29,13 +33,13 @@ class DisponibilidadeQuartosTests(TestCase):
             telefone="11999999999",
         )
         cls.ocupado = Quarto.objects.create(
-            numero="101", tipo=cls.tipo_simples, capacidade=1
+            numero="101", tipo=cls.tipo_simples
         )
         cls.livre = Quarto.objects.create(
-            numero="102", tipo=cls.tipo_simples, capacidade=1
+            numero="102", tipo=cls.tipo_simples
         )
         cls.manutencao = Quarto.objects.create(
-            numero="103", tipo=cls.tipo_simples, capacidade=1, status="M"
+            numero="103", tipo=cls.tipo_simples, status="M"
         )
         Reserva.objects.create(
             cliente=cls.cliente,
@@ -84,8 +88,9 @@ class DisponibilidadeQuartosTests(TestCase):
             [reserva.id for reserva in resposta.context["checkouts"]],
             [checkout_pendente.id],
         )
-        self.assertNotContains(resposta, "<form")
-        self.assertNotContains(resposta, "<button")
+        conteudo_agenda = resposta.content.decode().split('<section class="agenda-home"', 1)[1]
+        self.assertNotIn("<form", conteudo_agenda)
+        self.assertNotIn("<button", conteudo_agenda)
 
     def test_ocorrencia_e_registrada_por_quarto(self):
         url = reverse("registrar_ocorrencia")
@@ -148,6 +153,10 @@ class DisponibilidadeQuartosTests(TestCase):
         self.assertEqual(self.manutencao.status, "D")
 
     def test_links_de_ordenacao_das_ocorrencias_preservam_a_busca(self):
+        Ocorrencia.objects.create(quarto=self.ocupado, descricao="Pendente")
+        Ocorrencia.objects.create(
+            quarto=self.ocupado, descricao="Concluída", concluida=True
+        )
         for nome_url in ("listar_ocorrencia", "ocorrencias_concluidas"):
             pagina = self.client.get(reverse(nome_url), {"pesquisar_quarto": "101"})
 
@@ -163,13 +172,15 @@ class DisponibilidadeQuartosTests(TestCase):
     def test_quarto_usa_preco_do_tipo_sem_preco_proprio(self):
         cadastro = self.client.get(reverse("cadastrar_quarto"))
         self.assertNotContains(cadastro, 'name="preco_diaria"')
+        self.assertNotContains(cadastro, 'name="capacidade"')
 
         resposta = self.client.post(reverse("cadastrar_quarto"), {
-            "numero": "104", "tipo": self.tipo_simples.id, "capacidade": 2,
+            "numero": "104", "tipo": self.tipo_simples.id,
         })
         self.assertRedirects(resposta, reverse("listar_quartos"))
         quarto = Quarto.objects.get(numero="104")
         self.assertNotIn("preco_diaria", [campo.name for campo in Quarto._meta.fields])
+        self.assertNotIn("capacidade", [campo.name for campo in Quarto._meta.fields])
         self.assertNotContains(self.client.get(reverse("listar_quartos")), "Preço da diária")
 
         self.tipo_simples.preco_diaria = Decimal("150.00")
@@ -178,6 +189,40 @@ class DisponibilidadeQuartosTests(TestCase):
             calcular_preco_total(quarto, date(2026, 12, 1), date(2026, 12, 3)),
             Decimal("300.00"),
         )
+
+    def test_capacidade_e_definida_no_tipo_e_compartilhada_pelos_quartos(self):
+        cadastro_tipo = self.client.get(reverse("criar_tipo_quarto"))
+        self.assertContains(cadastro_tipo, 'name="capacidade"')
+        self.assertNotContains(self.client.get(reverse("cadastrar_quarto")), 'name="capacidade"')
+
+        resposta = self.client.post(reverse("criar_tipo_quarto"), {
+            "tipo": "Família",
+            "preco_diaria": "250.00",
+            "capacidade": "4",
+        })
+        self.assertRedirects(resposta, reverse("listar_tipos_quarto"))
+        tipo = TipoQuarto.objects.get(tipo="Família")
+        quarto = Quarto.objects.create(numero="204", tipo=tipo)
+        self.assertContains(self.client.get(reverse("listar_tipos_quarto")), "4 pessoas")
+        self.assertContains(self.client.get(reverse("listar_quartos")), "4 pessoas")
+
+        resposta = self.client.post(reverse("editar_tipo_quarto", args=[tipo.id]), {
+            "tipo": "Família",
+            "preco_diaria": "250.00",
+            "capacidade": "5",
+        })
+        self.assertRedirects(resposta, reverse("listar_tipos_quarto"))
+        quarto.tipo.refresh_from_db()
+        self.assertEqual(quarto.tipo.capacidade, 5)
+
+        resposta = self.client.post(reverse("editar_tipo_quarto", args=[tipo.id]), {
+            "tipo": "Família",
+            "preco_diaria": "250.00",
+            "capacidade": "0",
+        })
+        self.assertContains(resposta, "A capacidade deve ser de pelo menos 1 pessoa.")
+        tipo.refresh_from_db()
+        self.assertEqual(tipo.capacidade, 5)
 
     def test_relatorio_exibe_tipo_de_quarto_relacionado(self):
         resposta = self.client.post(reverse("gerar_relatorio"), {
@@ -782,6 +827,11 @@ class DisponibilidadeQuartosTests(TestCase):
 
 
 class IntegracaoClientesTests(TestCase):
+    def setUp(self):
+        self.client.force_login(
+            User.objects.create_superuser("usuario_teste", "teste@example.com", "senha-forte")
+        )
+
     def test_menu_e_paginas_de_clientes(self):
         resposta = self.client.get(reverse("listagem_clientes"))
         self.assertEqual(resposta.status_code, 200)
@@ -827,10 +877,15 @@ class IntegracaoClientesTests(TestCase):
 
 
 class TarifasSazonaisTests(TestCase):
+    def setUp(self):
+        self.client.force_login(
+            User.objects.create_superuser("usuario_teste", "teste@example.com", "senha-forte")
+        )
+
     def test_tipo_com_quarto_cadastrado_nao_pode_ser_excluido(self):
-        tipo = TipoQuarto.objects.create(tipo="Duplo", preco_diaria="150.00")
+        tipo = TipoQuarto.objects.create(tipo="Duplo", preco_diaria="150.00", capacidade=2)
         Quarto.objects.create(
-            numero="201", tipo=tipo, capacidade=2, ativo=False,
+            numero="201", tipo=tipo, ativo=False,
         )
 
         resposta = self.client.post(
@@ -869,7 +924,7 @@ class TarifasSazonaisTests(TestCase):
         primeiro.TarifaSazonal.add(tarifa)
         segundo.TarifaSazonal.add(tarifa)
         quarto = Quarto.objects.create(
-            numero="301", tipo=primeiro, capacidade=1
+            numero="301", tipo=primeiro
         )
         self.assertEqual(
             calcular_preco_total(quarto, date(2026, 12, 1), date(2026, 12, 3)),
@@ -923,6 +978,7 @@ class TarifasSazonaisTests(TestCase):
         resposta = self.client.post(reverse("criar_tipo_quarto"), {
             "tipo": "Duplo especial",
             "preco_diaria": "150.00",
+            "capacidade": "2",
             "TarifaSazonal": [tarifa.id],
         })
 
