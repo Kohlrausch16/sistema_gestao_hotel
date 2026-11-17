@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib import messages
+from django.contrib.auth import login, logout
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.utils import timezone
@@ -18,10 +19,11 @@ from .sazonalidade import periodo_para_exibir, proximidade_tarifa
 from .forms import ClienteForm, OcorrenciaForm, ReservaForm, TarifaSazonalForm, TipoQuartoForm
 from .forms import QuartoForm
 from .forms import EditarQuartoForm
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import Funcionario
 from .forms import CadastroForm, FuncionarioForm
 from .models import Ocorrencia, Relatorio
+from .pode_acessar import pode_acessar
 
 from functools import wraps
 from django.contrib.auth.decorators import login_required
@@ -42,6 +44,15 @@ def gerente_ou_administrador_required(view):
             raise PermissionDenied
         return view(request, *args, **kwargs)
 
+    return wrapper
+
+def regra_de_acesso(view):
+    @login_required
+    @wraps(view)
+    def wrapper(request, *args, **kwargs):
+        if not pode_acessar(request.user, view.__name__):
+            raise PermissionDenied
+        return view(request, *args, **kwargs)
     return wrapper
 
 def index(request):
@@ -760,3 +771,26 @@ def checkincheckout(request):
     }
 
     return render(request, "checkin_checkout.html", dados)
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('index')
+
+    form = AuthenticationForm(request, data=request.POST or None)
+    destino = request.POST.get('next') or request.GET.get('next', '')
+    if request.method == 'POST' and form.is_valid():
+        login(request, form.get_user())
+        if destino and url_has_allowed_host_and_scheme(
+            destino, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+        ):
+            return redirect(destino)
+        return redirect('index')
+
+    return render(request, 'login.html', {'form': form, 'next': destino})
+
+
+@require_POST
+def logout_view(request):
+    logout(request)
+    messages.success(request, "Logout realizado com sucesso.")
+    return redirect('login')
