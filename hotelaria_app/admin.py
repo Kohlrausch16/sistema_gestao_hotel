@@ -11,10 +11,10 @@ class ClienteAdmin(admin.ModelAdmin):
     list_display = ("nome","cargo")
 @admin.register(Quarto)
 class QuartoAdmin(admin.ModelAdmin):
-    list_display = ("numero", "tipo", "capacidade", "status")
+    list_display = ("numero", "tipo", "status")
 @admin.register(TipoQuarto)
 class TipoQuartoAdmin(admin.ModelAdmin):
-    list_display = ("tipo", "preco_diaria")
+    list_display = ("tipo", "capacidade", "preco_diaria")
 @admin.register(Ocorrencia)
 class OcorrenciaAdmin(admin.ModelAdmin):
     list_display = ("quarto", "descricao", "data_ocorrencia")

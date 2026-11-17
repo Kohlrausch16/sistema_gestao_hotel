@@ -120,14 +120,12 @@ class QuartoForm(forms.ModelForm):
 
         fields = [
             "numero",
-            "tipo",
-            "capacidade"
+            "tipo"
         ]
 
         labels = {
             "numero": "NUMERO",
-            "tipo": "TIPO",
-            "capacidade": "CAPACIDADE"
+            "tipo": "TIPO"
         }
 
         widgets = {
@@ -138,20 +136,8 @@ class QuartoForm(forms.ModelForm):
 
             "tipo": forms.Select(attrs={
                 "class": "campo-formulario placeholder-input input-tipo"
-            }),
-
-            "capacidade": forms.NumberInput(attrs={
-                "class": "campo-formulario placeholder-input input-capacidade",
-                "min": "1",
-                "step": "1"
             })
         }
-
-    def clean_capacidade(self):
-        capacidade = self.cleaned_data["capacidade"]
-        if capacidade < 1:
-            raise forms.ValidationError("A capacidade deve ser de pelo menos 1 pessoa.")
-        return capacidade
 
 
 class EditarQuartoForm(QuartoForm):
@@ -322,12 +308,19 @@ class TipoQuartoForm(forms.ModelForm):
             raise forms.ValidationError("O preço diário não pode ser negativo.")
         return preco
 
+    def clean_capacidade(self):
+        capacidade = self.cleaned_data['capacidade']
+        if capacidade < 1:
+            raise forms.ValidationError("A capacidade deve ser de pelo menos 1 pessoa.")
+        return capacidade
+
     class Meta:
         model = TipoQuarto
-        fields = ['tipo', 'preco_diaria', 'TarifaSazonal']
+        fields = ['tipo', 'preco_diaria', 'capacidade', 'TarifaSazonal']
         labels = {
             'tipo': 'TIPO',
             'preco_diaria': 'PREÇO DIÁRIO',
+            'capacidade': 'CAPACIDADE',
             'TarifaSazonal': 'TARIFAS SAZONAIS'
         }
         widgets = {
@@ -340,6 +333,11 @@ class TipoQuartoForm(forms.ModelForm):
                 "placeholder": "100.00",
                 "min": "0",
                 "step": "0.01"
+            }),
+            'capacidade': forms.NumberInput(attrs={
+                "class": "campo-formulario placeholder-input input-capacidade",
+                "min": "1",
+                "step": "1"
             }),
             'TarifaSazonal': forms.CheckboxSelectMultiple(),
         }

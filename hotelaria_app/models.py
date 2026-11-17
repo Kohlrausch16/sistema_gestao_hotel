@@ -55,6 +55,7 @@ class Funcionario(models.Model):
 class TipoQuarto(models.Model):
     tipo = models.CharField(max_length=20)
     preco_diaria = models.DecimalField(max_digits=10, decimal_places=2)
+    capacidade = models.PositiveIntegerField(default=1)
     TarifaSazonal = models.ManyToManyField('TarifaSazonal', blank=True)
     ativo = models.BooleanField(default=True)
 
@@ -75,7 +76,6 @@ class TarifaSazonal(models.Model):
 class Quarto(models.Model):
     numero = models.CharField(max_length=10)
     tipo = models.ForeignKey(TipoQuarto, on_delete=models.PROTECT)
-    capacidade = models.IntegerField(default=1)
     status = models.CharField(max_length=1, default='D', choices=STATUS_QUARTO_CHOICES)
     ativo = models.BooleanField(default=True)
 

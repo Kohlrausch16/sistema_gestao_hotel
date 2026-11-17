@@ -32,6 +32,7 @@
                     <thead>
                         <tr>
                             <th scope="col">Tipo</th>
+                            <th scope="col">Capacidade</th>
                             <th scope="col">Preço da diária</th>
                             <th scope="col">Tarifas sazonais</th>
                             <th scope="col">Ações</th>
@@ -41,6 +42,7 @@
                         {% for tipo_quarto in tipos_quarto %}
                             <tr>
                                 <td class="numero-quarto">{{ tipo_quarto.tipo }}</td>
+                                <td>{{ tipo_quarto.capacidade }} pessoa{{ tipo_quarto.capacidade|pluralize }}</td>
                                 <td>R$ {{ tipo_quarto.preco_diaria|floatformat:2 }}</td>
                                 <td>
                                     {% for tarifa in tipo_quarto.TarifaSazonal.all %}
