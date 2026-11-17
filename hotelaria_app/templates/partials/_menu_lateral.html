@@ -5,7 +5,8 @@
         <ul class="menu-lateral-container">
             {% pode_acessar "listar_clientes" as pode_ver_clientes %}
             {% if pode_ver_clientes %}
-                <li class="item-navegacao">
+                {% menu_ativo "listagem_clientes" as clientes_ativo %}
+                <li class="item-navegacao{% if clientes_ativo %} menu-ativo{% endif %}">
                     <a href="{% url 'listagem_clientes' %}">
                         <i class="fa-solid fa-users" id="icone-clientes" aria-hidden="true"></i>
                         Gerenciar clientes
@@ -15,7 +16,8 @@
 
             {% pode_acessar "listar_quartos" as pode_ver_quartos %}
             {% if pode_ver_quartos %}
-                <li class="item-navegacao">
+                {% menu_ativo "listar_quartos" as quartos_ativo %}
+                <li class="item-navegacao{% if quartos_ativo %} menu-ativo{% endif %}">
                     <a href="{% url 'listar_quartos' %}">
                         <i class="fa-solid fa-bed" id="icone-quartos" aria-hidden="true"></i>
                         Gerenciar quartos
@@ -25,7 +27,8 @@
 
             {% pode_acessar "listar_tipos_quarto" as pode_ver_tipos_quarto %}
             {% if pode_ver_tipos_quarto %}
-                <li class="item-navegacao">
+                {% menu_ativo "listar_tipos_quarto" as tipos_ativo %}
+                <li class="item-navegacao{% if tipos_ativo %} menu-ativo{% endif %}">
                     <a href="{% url 'listar_tipos_quarto' %}">
                         <i class="fa-solid fa-layer-group icone-menu-azul" aria-hidden="true"></i>
                         Tipos de quarto
@@ -35,7 +38,8 @@
 
             {% pode_acessar "listar_tarifas_sazonais" as pode_ver_tarifas %}
             {% if pode_ver_tarifas %}
-                <li class="item-navegacao">
+                {% menu_ativo "listar_tarifas_sazonais" as tarifas_ativo %}
+                <li class="item-navegacao{% if tarifas_ativo %} menu-ativo{% endif %}">
                     <a href="{% url 'listar_tarifas_sazonais' %}">
                         <i class="fa-solid fa-tags icone-menu-azul" aria-hidden="true"></i>
                         Gerenciar tarifas
@@ -45,7 +49,8 @@
 
             {% pode_acessar "listar_reservas" as pode_ver_reservas %}
             {% if pode_ver_reservas %}
-                <li class="item-navegacao">
+                {% menu_ativo "listar_reservas" as reservas_ativo %}
+                <li class="item-navegacao{% if reservas_ativo %} menu-ativo{% endif %}">
                     <a href="{% url 'listar_reservas' %}">
                         <i class="fa-solid fa-calendar-days" id="icone-reservas" aria-hidden="true"></i>
                         Gerenciar reservas
@@ -55,7 +60,8 @@
 
             {% pode_acessar "listar_funcionarios" as pode_ver_funcionarios %}
             {% if pode_ver_funcionarios %}
-                <li class="item-navegacao">
+                {% menu_ativo "listar_funcionarios" as funcionarios_ativo %}
+                <li class="item-navegacao{% if funcionarios_ativo %} menu-ativo{% endif %}">
                     <a href="{% url 'listar_funcionarios' %}">
                         <i class="fa-solid fa-users" id="icone-clientes" aria-hidden="true"></i>
                         Gerenciar Funcionários
@@ -65,7 +71,8 @@
 
             {% pode_acessar "listar_ocorrencia" as pode_ver_ocorrencias %}
             {% if pode_ver_ocorrencias %}
-                <li class="item-navegacao">
+                {% menu_ativo "listar_ocorrencia" as ocorrencias_ativo %}
+                <li class="item-navegacao{% if ocorrencias_ativo %} menu-ativo{% endif %}">
                     <a href="{% url 'listar_ocorrencia' %}">
                         <i class="fa-solid fa-users" id="icone-clientes" aria-hidden="true"></i>
                         Ocorrências
@@ -75,7 +82,8 @@
 
             {% pode_acessar "gerar_relatorio" as pode_ver_relatorios %}
             {% if pode_ver_relatorios %}
-                <li class="item-navegacao">
+                {% menu_ativo "gerar_relatorio" as relatorios_ativo %}
+                <li class="item-navegacao{% if relatorios_ativo %} menu-ativo{% endif %}">
                     <a href="{% url 'gerar_relatorio' %}">
                         <i class="fa-solid fa-users" id="icone-clientes" aria-hidden="true"></i>
                         Relatórios
