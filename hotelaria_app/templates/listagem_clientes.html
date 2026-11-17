@@ -1,10 +1,10 @@
 {% extends "partials/_base.html" %}
-{% load static %}
+{% load static permissoes %}
 
 {% block title %}Clientes{% endblock %}
 
 {% block arquivos_css %}
-    <link rel="stylesheet" href="{% static 'css/listagem_clientes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/listagem_clientes.css' %}?v=2">
 {% endblock %}
 
 {% block titulo_pagina %}
@@ -20,6 +20,7 @@
 {% endblock %}
 
 {% block main %}
+    {% pode_acessar 'excluir_cliente' as pode_excluir_cliente %}
     {% if clientes %}
         <form class="pesquisa-clientes" role="search">
             <input id="pesquisa-clientes" type="search" placeholder="Pesquisar cliente por nome ou CPF" aria-label="Pesquisar cliente por nome ou CPF">
@@ -55,9 +56,19 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a class="botao-editar-cliente" href="{% url 'editar_cliente' cliente.id %}" aria-label="Editar cliente {{ cliente.nome }} {{ cliente.sobrenome }}" title="Editar cliente">
-                                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                                    </a>
+                                    <div class="acoes-cliente">
+                                        <a class="botao-editar-cliente" href="{% url 'editar_cliente' cliente.id %}" aria-label="Editar cliente {{ cliente.nome }} {{ cliente.sobrenome }}" title="Editar cliente">
+                                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                        </a>
+                                        {% if pode_excluir_cliente %}
+                                            <form class="form-excluir-cliente" method="post" action="{% url 'excluir_cliente' cliente.id %}">
+                                                {% csrf_token %}
+                                                <button class="botao-excluir-cliente" type="submit" aria-label="Excluir cliente {{ cliente.nome }} {{ cliente.sobrenome }}" title="Excluir cliente">
+                                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}

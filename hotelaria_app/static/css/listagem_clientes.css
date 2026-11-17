@@ -159,7 +159,22 @@
     color: #475569;
 }
 
-.botao-editar-cliente {
+.acoes-cliente {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-excluir-cliente {
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.botao-editar-cliente,
+.botao-excluir-cliente {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -169,12 +184,19 @@
     border-radius: 5px;
     background: #FFFFFF;
     color: #334155;
+    cursor: pointer;
 }
 
 .botao-editar-cliente:hover,
 .botao-editar-cliente:focus-visible {
     border-color: #3B82F6;
     color: #1D4ED8;
+}
+
+.botao-excluir-cliente:hover,
+.botao-excluir-cliente:focus-visible {
+    border-color: #EF4444;
+    color: #B91C1C;
 }
 
 .clientes-vazios {

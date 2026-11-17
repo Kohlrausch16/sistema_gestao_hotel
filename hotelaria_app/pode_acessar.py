@@ -12,6 +12,7 @@ def pode_acessar(user, nome_view):
     acessos = {
                 'recepcionista': [
                     'index', 'listar_clientes', 'cadastrar_cliente', 'editar_cliente',
+                    'excluir_cliente',
                     'listar_quartos', 'cadastrar_quarto', 'editar_quarto',
                     'excluir_quarto', 'quartos_disponiveis',
                     'listar_reservas', 'criar_reserva', 'editar_reserva',

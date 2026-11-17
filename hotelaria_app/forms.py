@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.utils import timezone
 from datetime import date
 
@@ -157,6 +158,9 @@ class ReservaForm(forms.ModelForm):
         hoje = timezone.localdate().isoformat()
         self.fields["data_entrada"].widget.attrs["min"] = hoje
         self.fields["data_saida"].widget.attrs["min"] = hoje
+        self.fields["cliente"].queryset = Cliente.objects.filter(
+            Q(ativo=True) | Q(pk=self.instance.cliente_id)
+        )
         self.fields["cliente"].label_from_instance = (
             lambda cliente: f"{cliente} — CPF: {cliente.cpf}"
         )
