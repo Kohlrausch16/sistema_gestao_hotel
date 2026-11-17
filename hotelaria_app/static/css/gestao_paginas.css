@@ -84,10 +84,6 @@
     overflow-wrap: anywhere;
 }
 
-.painel-relatorio {
-    max-width: 760px;
-}
-
 .painel-relatorio .formulario-relatorio {
     box-sizing: border-box;
     width: 100%;
