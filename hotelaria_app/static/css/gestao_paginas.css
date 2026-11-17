@@ -1,0 +1,153 @@
+.subtitulo-quartos {
+    margin: 0;
+}
+
+.pesquisa-quartos input {
+    min-width: 0;
+}
+
+.ordenacao-lista {
+    display: inline-flex;
+    gap: 0.35rem;
+    margin-left: 0.35rem;
+}
+
+.ordenacao-lista a {
+    color: #2563EB;
+    font-size: 1rem;
+    text-decoration: none;
+}
+
+.ordenacao-lista a:hover,
+.ordenacao-lista a:focus-visible {
+    color: #1D4ED8;
+    text-decoration: underline;
+}
+
+.painel-rodape {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #E2E8F0;
+}
+
+.botao-secundario-gestao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 7px;
+    background: #FFFFFF;
+    color: #0F172A;
+    font: 700 0.8rem "Inter", sans-serif;
+    text-decoration: none;
+}
+
+.botao-secundario-gestao:hover {
+    background: #F1F5F9;
+}
+
+.botao-concluir-gestao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 5px;
+    background: #FFFFFF;
+    color: #334155;
+    cursor: pointer;
+}
+
+.botao-concluir-gestao:hover {
+    border-color: #16A34A;
+    color: #15803D;
+}
+
+.tabela-ocorrencias {
+    white-space: normal;
+}
+
+.tabela-ocorrencias th:nth-child(2),
+.tabela-ocorrencias td:nth-child(2) {
+    min-width: 15rem;
+}
+
+.tabela-ocorrencias td:last-child,
+.tabela-ocorrencias th:last-child {
+    white-space: nowrap;
+}
+
+.descricao-ocorrencia {
+    overflow-wrap: anywhere;
+}
+
+.painel-relatorio {
+    max-width: 760px;
+}
+
+.painel-relatorio .formulario-relatorio {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 1.5rem;
+    border: 0;
+    border-radius: 0;
+}
+
+.ajuda-relatorio {
+    margin: 0 0 1rem;
+    color: #64748B;
+    font: 0.875rem "Inter", sans-serif;
+}
+
+.painel-relatorio .opcoes-relatorio {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.painel-relatorio .opcao-relatorio {
+    margin: 0;
+    font: 0.875rem "Inter", sans-serif;
+    font-weight: 500;
+}
+
+.painel-relatorio .opcao-relatorio:hover {
+    border-color: #94A3B8;
+    background: #F8FAFC;
+}
+
+.painel-relatorio .opcao-relatorio input {
+    flex: none;
+}
+
+.painel-relatorio .container-botoes {
+    margin: 0;
+}
+
+.painel-relatorio .botao-confirmar {
+    gap: 0.5rem;
+    padding: 0.8rem 1rem;
+}
+
+@media (max-width: 800px) {
+    .painel-rodape {
+        padding: 1rem;
+    }
+
+    .painel-relatorio .opcoes-relatorio {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    .pesquisa-quartos {
+        flex-wrap: wrap;
+    }
+
+    .pesquisa-quartos input {
+        flex-basis: 100%;
+    }
+}
