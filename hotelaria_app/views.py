@@ -637,8 +637,8 @@ def editar_tipo_quarto(request, tipo_id):
 @require_POST
 def excluir_tipo_quarto(request, tipo_id):
     tipo_quarto = get_object_or_404(TipoQuarto, id=tipo_id, ativo=True)
-    if Quarto.objects.filter(tipo=tipo_quarto).exists():
-        messages.error(request, "Não é possível excluir este tipo: há quartos cadastrados com ele.")
+    if Quarto.objects.filter(tipo=tipo_quarto, ativo=True).exists():
+        messages.error(request, "Não é possível excluir este tipo: há quartos ativos vinculados a ele.")
         return redirect('listar_tipos_quarto')
 
     tipo_quarto.ativo = False
