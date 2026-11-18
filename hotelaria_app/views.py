@@ -215,11 +215,11 @@ def excluir_quarto(request, quarto_id):
     possui_reserva = Reserva.objects.filter(
         quarto=quarto,
         ativo=True,
-        status='A',
-        data_saida__gt=timezone.localdate(),
+    ).filter(
+        Q(status='E') | Q(status='A', data_saida__gt=timezone.localdate())
     ).exists()
     if quarto.status == 'O' or possui_reserva:
-        mensagem_erro = "Não é possível excluir um quarto ocupado ou com reserva ativa futura."
+        mensagem_erro = "Não é possível excluir um quarto ocupado ou com reserva ativa ou em andamento."
         messages.error(request, mensagem_erro)
         return redirect('listar_quartos')
     
@@ -646,8 +646,8 @@ def editar_tipo_quarto(request, tipo_id):
 @require_POST
 def excluir_tipo_quarto(request, tipo_id):
     tipo_quarto = get_object_or_404(TipoQuarto, id=tipo_id, ativo=True)
-    if Quarto.objects.filter(tipo=tipo_quarto, ativo=True).exists():
-        messages.error(request, "Não é possível excluir este tipo: há quartos ativos vinculados a ele.")
+    if Quarto.objects.filter(tipo=tipo_quarto).exists():
+        messages.error(request, "Não é possível excluir este tipo: há quartos vinculados a ele.")
         return redirect('listar_tipos_quarto')
 
     tipo_quarto.ativo = False
@@ -713,6 +713,21 @@ def gerar_relatorio(request):
         reservas = Reserva.objects.filter(ativo=True).select_related(
             'cliente', 'quarto__tipo'
         ).order_by('data_entrada')
+        inicio = formulario.cleaned_data['periodo_inicio']
+        fim = formulario.cleaned_data['periodo_fim']
+        cliente = formulario.cleaned_data['cliente']
+        status = formulario.cleaned_data['status']
+        tipo_quarto = formulario.cleaned_data['tipo_quarto']
+        if inicio:
+            reservas = reservas.filter(data_saida__gt=inicio)
+        if fim:
+            reservas = reservas.filter(data_entrada__lte=fim)
+        if cliente:
+            reservas = reservas.filter(cliente=cliente)
+        if status:
+            reservas = reservas.filter(status=status)
+        if tipo_quarto:
+            reservas = reservas.filter(quarto__tipo=tipo_quarto)
         valores_por_reserva = []
 
         for reserva in reservas:

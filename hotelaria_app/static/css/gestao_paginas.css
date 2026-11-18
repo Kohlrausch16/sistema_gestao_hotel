@@ -100,6 +100,33 @@
     font: 0.875rem "Inter", sans-serif;
 }
 
+.filtros-relatorio {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1rem;
+}
+
+.filtro-relatorio {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    color: #0F172A;
+    font: 0.875rem "Inter", sans-serif;
+}
+
+.filtro-relatorio input,
+.filtro-relatorio select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0.5rem;
+    border: 1px solid #CBD5E1;
+    border-radius: 0.4rem;
+    background: #FFF;
+    color: #0F172A;
+    font: inherit;
+}
+
 .painel-relatorio .opcoes-relatorio {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
