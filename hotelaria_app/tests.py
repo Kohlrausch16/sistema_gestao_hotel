@@ -826,6 +826,95 @@ class DisponibilidadeQuartosTests(TestCase):
         self.assertNotContains(resposta, self.ocupado.numero)
 
 
+class CorrecoesFinaisTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.usuario = User.objects.create_superuser(
+            'admin_correcoes', 'admin_correcoes@example.com', 'senha-forte'
+        )
+        cls.cliente = Cliente.objects.create(
+            nome='Ana', sobrenome='Silva', cpf='12345678901',
+            data_nascimento=date(1990, 1, 1), email='ana@example.com',
+            telefone='11999999999',
+        )
+        cls.outro_cliente = Cliente.objects.create(
+            nome='Bruno', sobrenome='Lima', cpf='98765432100',
+            data_nascimento=date(1991, 1, 1), email='bruno@example.com',
+            telefone='11888888888',
+        )
+        simples = TipoQuarto.objects.create(tipo='Simples', preco_diaria='100.00')
+        suite = TipoQuarto.objects.create(tipo='Suíte', preco_diaria='200.00')
+        cls.quarto = Quarto.objects.create(numero='201', tipo=simples)
+        cls.outro_quarto = Quarto.objects.create(numero='301', tipo=suite)
+        cls.reserva_em_andamento = Reserva.objects.create(
+            cliente=cls.cliente, quarto=cls.quarto,
+            data_entrada=date(2026, 11, 10), data_saida=date(2026, 11, 12),
+            status='E',
+        )
+        cls.reserva_futura = Reserva.objects.create(
+            cliente=cls.outro_cliente, quarto=cls.outro_quarto,
+            data_entrada=date(2026, 12, 10), data_saida=date(2026, 12, 12),
+            status='A',
+        )
+
+    def setUp(self):
+        self.client.force_login(self.usuario)
+
+    def test_exclusao_de_quarto_considera_reserva_em_andamento(self):
+        with patch('hotelaria_app.views.timezone.localdate', return_value=date(2026, 11, 11)):
+            resposta = self.client.post(reverse('excluir_quarto', args=[self.quarto.id]), follow=True)
+
+        self.quarto.refresh_from_db()
+        self.assertTrue(self.quarto.ativo)
+        self.assertContains(resposta, 'Não é possível excluir um quarto ocupado')
+
+    def test_relatorio_combina_os_quatro_filtros(self):
+        resposta = self.client.post(reverse('gerar_relatorio'), {
+            'campos': ['cliente', 'quarto', 'status'],
+            'periodo_inicio': '2026-11-11',
+            'periodo_fim': '2026-11-11',
+            'cliente': self.cliente.id,
+            'status': 'E',
+            'tipo_quarto': self.quarto.tipo_id,
+        })
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.context['linhas'], [['Ana Silva', '201', 'Em andamento']])
+
+    def test_cada_filtro_do_relatorio_restringe_as_reservas(self):
+        filtros = (
+            {'periodo_inicio': '2026-12-10', 'periodo_fim': '2026-12-10'},
+            {'cliente': self.outro_cliente.id},
+            {'status': 'A'},
+            {'tipo_quarto': self.outro_quarto.tipo_id},
+        )
+        for filtro in filtros:
+            with self.subTest(filtro=filtro):
+                resposta = self.client.post(reverse('gerar_relatorio'), {
+                    'campos': ['quarto'], **filtro,
+                })
+                self.assertEqual(resposta.context['linhas'], [['301']])
+
+    def test_relatorio_nao_inclui_saida_no_inicio_do_periodo(self):
+        resposta = self.client.post(reverse('gerar_relatorio'), {
+            'campos': ['quarto'],
+            'periodo_inicio': '2026-11-12',
+            'periodo_fim': '2026-11-12',
+        })
+
+        self.assertEqual(resposta.context['linhas'], [])
+
+    def test_relatorio_rejeita_periodo_invertido(self):
+        resposta = self.client.post(reverse('gerar_relatorio'), {
+            'campos': ['cliente'],
+            'periodo_inicio': '2026-12-12',
+            'periodo_fim': '2026-11-11',
+        })
+
+        self.assertFalse(resposta.context['formulario'].is_valid())
+        self.assertContains(resposta, 'O fim do período deve ser igual ou posterior ao início.')
+
+
 class IntegracaoClientesTests(TestCase):
     def setUp(self):
         self.client.force_login(

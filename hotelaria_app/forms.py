@@ -406,6 +406,43 @@ class CadastroForm(forms.ModelForm):
             "required": "Selecione pelo menos um campo para gerar o relatório."
         },
     )
+    periodo_inicio = forms.DateField(
+        label='Início da estadia', required=False,
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+    )
+    periodo_fim = forms.DateField(
+        label='Fim da estadia', required=False,
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+    )
+    cliente = forms.ModelChoiceField(
+        label='Cliente', queryset=Cliente.objects.none(), required=False,
+        empty_label='Todos os clientes',
+    )
+    status = forms.ChoiceField(
+        label='Status da reserva', required=False,
+        choices=[('', 'Todos os status'), *Reserva._meta.get_field('status').choices],
+    )
+    tipo_quarto = forms.ModelChoiceField(
+        label='Tipo de quarto', queryset=TipoQuarto.objects.none(), required=False,
+        empty_label='Todos os tipos',
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['cliente'].queryset = Cliente.objects.filter(
+            reserva__ativo=True
+        ).distinct().order_by('nome', 'sobrenome')
+        self.fields['tipo_quarto'].queryset = TipoQuarto.objects.filter(
+            quarto__reserva__ativo=True
+        ).distinct().order_by('tipo')
+
+    def clean(self):
+        dados = super().clean()
+        inicio = dados.get('periodo_inicio')
+        fim = dados.get('periodo_fim')
+        if inicio and fim and fim < inicio:
+            self.add_error('periodo_fim', 'O fim do período deve ser igual ou posterior ao início.')
+        return dados
 
     class Meta:
         model = Relatorio

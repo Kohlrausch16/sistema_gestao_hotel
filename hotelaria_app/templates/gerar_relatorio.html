@@ -14,7 +14,7 @@
         <div class="cabecalho-quartos">
             <div>
                 <h1 class="titulo-pagina">RELATÓRIOS</h1>
-                <p class="subtitulo-quartos">Escolha os dados que deseja incluir no relatório de reservas.</p>
+                <p class="subtitulo-quartos">Escolha os filtros e os dados que deseja incluir no relatório de reservas.</p>
             </div>
         </div>
     {% endif %}
@@ -42,7 +42,7 @@
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="{{ cabecalhos|length }}">Nenhuma reserva cadastrada.</td>
+                                <td colspan="{{ cabecalhos|length }}">Nenhuma reserva encontrada para os filtros escolhidos.</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -57,6 +57,21 @@
             <div class="painel-cabecalho"><h2>Relatório de reservas</h2></div>
             <form class="formulario-relatorio" method="post" action="{% url 'gerar_relatorio' %}" target="_blank">
                 {% csrf_token %}
+                <fieldset>
+                    <legend>Filtros de reservas</legend>
+                    <p class="ajuda-relatorio">O período inclui reservas cuja estadia cruza as datas informadas.</p>
+                    <div class="filtros-relatorio">
+                        {% for campo in formulario %}
+                            {% if campo.name != 'campos' %}
+                                <label class="filtro-relatorio" for="{{ campo.id_for_label }}">
+                                    <span>{{ campo.label }}</span>
+                                    {{ campo }}
+                                    {% for erro in campo.errors %}<span class="erro-relatorio" role="alert">{{ erro }}</span>{% endfor %}
+                                </label>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </fieldset>
                 <fieldset>
                     <legend>Campos do relatório</legend>
                     <p class="ajuda-relatorio">Selecione pelo menos um campo.</p>

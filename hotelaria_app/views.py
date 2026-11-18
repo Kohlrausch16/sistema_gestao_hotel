@@ -713,6 +713,21 @@ def gerar_relatorio(request):
         reservas = Reserva.objects.filter(ativo=True).select_related(
             'cliente', 'quarto__tipo'
         ).order_by('data_entrada')
+        inicio = formulario.cleaned_data['periodo_inicio']
+        fim = formulario.cleaned_data['periodo_fim']
+        cliente = formulario.cleaned_data['cliente']
+        status = formulario.cleaned_data['status']
+        tipo_quarto = formulario.cleaned_data['tipo_quarto']
+        if inicio:
+            reservas = reservas.filter(data_saida__gt=inicio)
+        if fim:
+            reservas = reservas.filter(data_entrada__lte=fim)
+        if cliente:
+            reservas = reservas.filter(cliente=cliente)
+        if status:
+            reservas = reservas.filter(status=status)
+        if tipo_quarto:
+            reservas = reservas.filter(quarto__tipo=tipo_quarto)
         valores_por_reserva = []
 
         for reserva in reservas:
